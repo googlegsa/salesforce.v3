@@ -1,0 +1,4 @@
+com.google.enterprise.connector.salesforce
+com.google.enterprise.connector.salesforce.exception
+com.google.enterprise.connector.salesforce.modules.salesforce
+com.google.enterprise.connector.salesforce.storetype
