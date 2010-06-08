@@ -350,8 +350,8 @@ Effectively, all three GSAs are in sync but only one GSA actually ever traverses
 The DBStore also provides clustering and high availability in some respects with Quartz.  If the connector detects a DBStore, in addition to creating the connector instance tables,
  Quartz clustering tables are also generated.  This means the JobStore for quartz (scheduling, etc) is saved to a database.  If two separate GSAs share the same database and have the
  <b>same</b> connector instance name, they will share the same JobStore and quartz will loadbalance and perform automatic failover of triggers.  Its imperative that both GSA's use 
- different connector managers (both pointing to the same database) and that the connector instance names configured on them are identical.  If one connector-manager is offline, 
- Quartz will schedule jobs on the remaining one.  If both are up, the quartz triggers will loadbalance and fire only on one.  Since the connector instance database is the same
+ different connector managers (both pointing to the same database) and that the connector instance names configured on them are identical (the xslt can be different but the connector
+ name must be the same).  If one connector-manager is offline, Quartz will schedule jobs on the remaining one.  If both are up, the quartz triggers will loadbalance and fire only on one.  Since the connector instance database is the same
  both GSA's will be implicitly in sync.
 </p>
 <p>
@@ -449,9 +449,9 @@ If you get results coming back, the login user,password and query can be used in
 <p>
 	To run the TestClient and just get the XML returned, edit the sample <a href="http://code.google.com/p/google-enterprise-connector-salesforce/source/browse/trunk/projects/salesforce/res/init.properties">init.properties</a>
 	 file downloaded from the SalesForce Connector webiste (<a href="http://code.google.com/p/google-enterprise-connector-salesforce/source/browse/#svn/trunk/projects/salesforce/res">link</a>) and run the 
-	following in the folder where you downloaded:  (replace ':' with ';' for Windows)
+	following in the folder where you downloaded:  (replace ':' with ';' for Windows and use SUN java 6+)
 	<br/>
-	<font color="green">java -cp .:salesforceconnector.jar com.google.enterprise.connector.salesforce.TestUtility init.properties </font>
+	<font color="green">java -cp .:salesforceconnector-(version)-all.jar com.google.enterprise.connector.salesforce.TestUtility init.properties </font>
 	<br/>
 	You may have to reset and append a new SecurityToken if the TestClient is run from an IP that isn't trusted by SalesForce.  A new token can be acquired by logging into
 	SalesForce and navigating to  "Setup-->My Personal Information-->Reset Security Token".  The new token will get emailed to the address associated with the account.
@@ -915,6 +915,20 @@ all the documents in the store since Jan5th, simply set the checkpoint state to 
 <h1><a name="Delete" id="Delete"></a>Deleting Documents</h1>
 <p>
 To delete documents in the GSA, the transform XSLT can be used with to detect any add/delete flag from the response query and set the SPI header appropriately. 
+<br/>
+For example, suppose the select query includes the 'isDeleted' flag as in <font color='green'>select ID,CaseNumber, Description, isDeleted from case where LastModifiedDate>$LAST_SYNC_DATE LIMIT</font>.  Then
+the XSLT can look to see if isDeleted is set and set the appropriate SPI Property.
+<br/>
+<pre>
+&lt;xsl:choose&gt;
+  &lt;xsl:when test =&quot;sf:IsDeleted[.=&#39;true&#39;]&quot;&gt;
+   	&lt;spiheader name=&quot;PROPNAME_ACTION&quot;&gt;delete&lt;/spiheader&gt;
+  &lt;/xsl:when&gt;
+  &lt;xsl:otherwise&gt;
+	&lt;spiheader name=&quot;PROPNAME_ACTION&quot;&gt;add&lt;/spiheader&gt;
+  &lt;/xsl:otherwise&gt;
+&lt;/xsl:choose&gt;
+</pre>
 <br/>
 <a href="http://code.google.com/apis/searchappliance/documentation/connectors/110/connector_dev/cdg_traversing.html#PROPNAME_ACTION">http://code.google.com/apis/searchappliance/documentation/connectors/110/connector_dev/cdg_traversing.html#PROPNAME_ACTION</a><br/>
 A separate connector instance can't be used to delete a document in another instance because the internal document prefix on the GSA  is always different even if the same
