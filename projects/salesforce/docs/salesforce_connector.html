@@ -453,6 +453,8 @@ If you get results coming back, the login user,password and query can be used in
 	<br/>
 	<font color="green">java -cp .:salesforceconnector-(version)-all.jar com.google.enterprise.connector.salesforce.TestUtility init.properties </font>
 	<br/>
+	The raw SOAP response (and transform, if specified) will get created per cursor in timestamp-based folders in the current directory.
+	<br/>
 	You may have to reset and append a new SecurityToken if the TestClient is run from an IP that isn't trusted by SalesForce.  A new token can be acquired by logging into
 	SalesForce and navigating to  "Setup-->My Personal Information-->Reset Security Token".  The new token will get emailed to the address associated with the account.
       The new password for the TestClient will be the combination of the oldpassword and new security token together.
