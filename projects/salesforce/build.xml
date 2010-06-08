@@ -4,7 +4,7 @@
        Build file for GSA Salesforce Connector
     </description>
 	
-  <property name="version" value="1.0.6"/>
+  <property name="version" value="1.0.6a"/>
   <property name="src" location="src"/>
   <property name="tempbin" location="tempbin"/>
   <property name="dist"  location="dist"/>
@@ -30,7 +30,7 @@
 
    <manifest file="MANIFEST.MF">
        <attribute name="Built-By" value="${user.name}"/>
-       <attribute name="Implementation-Version" value="${version}"/>         
+       <attribute name="Implementation-Version" value="${version} ${TODAY}"/>         
    </manifest>
 
   <target name="compile" depends="init" description="compile the source " >
