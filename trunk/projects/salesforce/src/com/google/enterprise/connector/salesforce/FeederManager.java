@@ -24,12 +24,14 @@ import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerFactory;
-import org.quartz.impl.*;
-import org.quartz.simpl.*;
+import org.quartz.impl.DirectSchedulerFactory;
+import org.quartz.impl.StdSchedulerFactory;
+import org.quartz.impl.jdbcjobstore.JobStoreCMT;
+import org.quartz.simpl.RAMJobStore;
 import org.quartz.simpl.SimpleThreadPool;
 import org.quartz.spi.JobStore;
-import org.quartz.impl.jdbcjobstore.*;
-import org.quartz.utils.*;
+import org.quartz.utils.DBConnectionManager;
+import org.quartz.utils.JNDIConnectionProvider;
 
 import com.google.enterprise.connector.salesforce.modules.salesforce.SalesForceModule;
 import com.google.enterprise.connector.salesforce.storetype.DBStore;
@@ -87,10 +89,6 @@ public class FeederManager {
 		  //add the base traversal manager to the singleton's hashmap
 		  hm_sf_traversal.put(connector.getInstanceName(),btm);
 		  
-		  //first check if its a dbstore, then we're storing hte quartz info in
-		  //the database so we should initialize it first:
-		  DBStore db = new DBStore(connector);
-
 		  //initialize the quartz scheduler factory
 		  SchedulerFactory schedFact=  new org.quartz.impl.StdSchedulerFactory(); 
 		  
@@ -104,6 +102,10 @@ public class FeederManager {
 			  threadPool.initialize();
 			  JobStore jobStore = null;
 			  if (connector.getStoretype().equalsIgnoreCase("DBStore")) {
+				  //first check if its a dbstore, then we're storing hte quartz info in
+				  //the database so we should initialize it first:
+				  DBStore db = new DBStore(connector);
+				  
 		          DBConnectionManager  dcm = DBConnectionManager.getInstance();
 		          JNDIConnectionProvider jcp = new JNDIConnectionProvider("java:comp/env/" + BaseConstants.CONNECTOR_DATASOURCE,true);
 		          dcm.addConnectionProvider("java:comp/env/" + BaseConstants.CONNECTOR_DATASOURCE,jcp);
