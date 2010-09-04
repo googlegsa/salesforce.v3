@@ -258,6 +258,7 @@ public class Util {
 			}
 			catch (Exception ex){
 				Logger.getLogger(Util.class.getName()).log(Level.SEVERE,"Error " +ex);
+				Logger.getLogger(Util.class.getName()).log(Level.SEVERE,"XML String exception " + strXML);
 				return null;
 			}
 		}
