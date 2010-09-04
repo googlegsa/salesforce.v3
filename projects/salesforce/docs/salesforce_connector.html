@@ -88,12 +88,12 @@ Administration pages of the admin console.</p></li>
           <li><a href="#RequiredCred">Required User Credentials for Traversal and
                   Indexing </a></li>      
           <li><a href="#ServeTimeSecurity">Serve Time User Authentication and Document Access Control</a> 
-          	<ul>
+          	<ol>
           		<li><a href="#defaultsecmodules">Default Authentication and Authorization Module</a></li>
           		<li><a href="#usersecmodules">User-defined, Dynamic Authentication and Authorization</a></li>
-          	</ul>
+          	</ol>
           </li>
-          </ol>
+     </ol>
   </li>
   <li><a href="#scheduler">SalesForce checkpoint and Quartz Schedulers</a></li>
   <li><a href="#store">SalesForce Connector StoreTypes</a></li>
@@ -224,7 +224,6 @@ fields requested in the select query to get the data. </p>
 <p>
 Each time the Quartz scheduler gets invoked, the connector logs into SalesForce and acquires a new sessionID to do that traversal set.</p>
 
-
 <h2><a name="ServeTimeSecurity" id="ServeTimeSecurity"></a>Serve Time User Authentication/Authorization and Document Access Control </h2>
 <p>At serve time, the Google Search Appliance supports document-level authorization
     for each search user such that only those documents a given user can view normally in SalesForce gets shown in the GSA results. </p>
@@ -244,7 +243,7 @@ access to salesforce URLs by selecting documents from salesforce as that user.</
 <li>User-Defined Authorization Module: The GSA will provide the salesforce connector a userID and a list of documents the user
 is requesting access to.  The connector will load a user-defined class which will use whatever mechanism necessary (LDAP group based on userID,
 etc) to verify if the user can see those documents.</li>
-
+</ul>
 </p>
 
 <h3><a name="defaultsecmodules" id="defaultsecmodules"></a>Default Authentication and Authorization Module</h3>
@@ -302,9 +301,14 @@ the salesforce connector.  Placing the compiled custom class into the WEB-INF/li
 <p>
 Finally, Tomcat must get started with startup arguments specifying the which custom class to load per instance.  For example, if a connector instnace name is <i>myinstance</i>, the 
 following <code>CATALINA_OPTS</code> settings will load and enable these the built-in Permissive modules (modules that authenticate all users and authorize all documents):
+<font size=2 color="green">
 <pre class="code">
-CATALINA_OPTS="-DAUmodule_myinstance=com.google.enterprise.connector.salesforce.security.PermissiveAuthentication -DAZmodule_myinstance=com.google.enterprise.connector.salesforce.security.PermissiveAuthorization"
+CATALINA_OPTS="-DAUmodule_myinstance=com.google.enterprise.connector.salesforce.security.PermissiveAuthentication"
 </pre>
+<pre class="code">
+CATALINA_OPTS="-DAZmodule_myinstance=com.google.enterprise.connector.salesforce.security.PermissiveAuthorization"
+</pre>
+</font>
 </p>
 
 
