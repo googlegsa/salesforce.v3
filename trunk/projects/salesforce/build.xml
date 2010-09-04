@@ -4,7 +4,7 @@
        Build file for GSA Salesforce Connector
     </description>
 	
-  <property name="version" value="1.0.6a"/>
+  <property name="version" value="1.8.0"/>
   <property name="src" location="src"/>
   <property name="tempbin" location="tempbin"/>
   <property name="dist"  location="dist"/>
@@ -34,7 +34,7 @@
    </manifest>
 
   <target name="compile" depends="init" description="compile the source " >
-    <javac  nowarn="true"  srcdir="${src}" destdir="${tempbin}">
+    <javac  nowarn="true"  target="1.6" srcdir="${src}" destdir="${tempbin}">
 	<classpath refid="master-classpath"/>
     </javac>
   </target>
