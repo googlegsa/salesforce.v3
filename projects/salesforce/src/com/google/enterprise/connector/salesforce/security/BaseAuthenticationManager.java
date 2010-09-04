@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.enterprise.connector.salesforce;
+package com.google.enterprise.connector.salesforce.security;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.enterprise.connector.salesforce.BaseConnector;
+import com.google.enterprise.connector.salesforce.BaseConstants;
 import com.google.enterprise.connector.salesforce.exception.BaseException;
 import com.google.enterprise.connector.salesforce.modules.salesforce.SalesForceLogin;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
@@ -55,6 +57,37 @@ public class BaseAuthenticationManager implements AuthenticationManager {
     public AuthenticationResponse authenticate(AuthenticationIdentity id) {
       logger.log(Level.FINER, " SalesForceAuthenticationManager authenticate called " + id.getDomain()+ "\\" +  id.getUsername());  
     
+      
+      //first see if we have a callable authentication module to try
+      
+      String callable_au_module = System.getProperty(BaseConstants.CALLABLE_AU + "_" + connector.getInstanceName());
+      
+      if (callable_au_module != null){
+	      logger.log(Level.INFO, "Using Loadable Authentication Module : " + callable_au_module);  
+			try{
+			  	  Class cls = Class.forName(callable_au_module);
+				  java.lang.reflect.Constructor co = cls.getConstructor();
+				  IAuthenticationModule icau = (IAuthenticationModule)co.newInstance();
+				  
+				  if  (icau.authenticate(id.getUsername(), id.getPassword())) {
+  				    logger.log(Level.FINE, "Login Succeeded for User " + id.getUsername());  
+				  	return  new AuthenticationResponse(true, id.getUsername());
+				  }
+				  else {
+					logger.log(Level.INFO, "Login Failed for User " + id.getUsername());  
+					new AuthenticationResponse(false, "LOGINFAILED");
+				  }
+				}
+			catch (Exception ex) {
+				logger.log(Level.SEVERE, "Unable to load Authentication Module " + callable_au_module); 
+			}	      
+      }
+      else {
+	      logger.log(Level.FINER, "Using Default Authentication Module");  
+      }
+      
+      
+      
       try{
     	  //get the username/password from the AuthenticationIdentity
     	  //and attempt to login to salesforce

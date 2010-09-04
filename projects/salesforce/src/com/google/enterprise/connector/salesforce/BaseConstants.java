@@ -30,5 +30,6 @@ public class BaseConstants {
 	public static String AUTHENTICATION_TYPE = "AUTH_TYPE";
 	public static int MAX_USER_SESSIONS=1000;
 	public static String CONNECTOR_DATASOURCE="jdbc/ConnectorDS";
-
+	public static String CALLABLE_AU="AUmodule";
+	public static String CALLABLE_AZ="AZmodule";
 }

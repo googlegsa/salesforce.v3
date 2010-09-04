@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.enterprise.connector.salesforce;
+package com.google.enterprise.connector.salesforce.security;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,8 +33,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.google.enterprise.connector.salesforce.BaseConnector;
+import com.google.enterprise.connector.salesforce.BaseConstants;
+import com.google.enterprise.connector.salesforce.Util;
 import com.google.enterprise.connector.salesforce.modules.salesforce.SFQuery;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
+import com.google.enterprise.connector.spi.AuthenticationResponse;
 import com.google.enterprise.connector.spi.AuthorizationManager;
 import com.google.enterprise.connector.spi.AuthorizationResponse;
 
@@ -69,6 +73,37 @@ public class BaseAuthorizationManager implements AuthorizationManager {
 	
     public Collection authorizeDocids(Collection col, AuthenticationIdentity id) {
       logger.log(Level.FINER, " SalesForceAuthorizationManager. authorizeDocids called for " + id.getUsername());
+
+      //first see if we have a callable authorization module to try
+      
+      String callable_az_module = System.getProperty(BaseConstants.CALLABLE_AZ + "_" + connector.getInstanceName());
+      
+      if (callable_az_module != null){
+	      logger.log(Level.FINE, "Using Loadable Authorization Module : " + callable_az_module);  
+			try{
+			  	  Class cls = Class.forName(callable_az_module);
+				  java.lang.reflect.Constructor co = cls.getConstructor();
+				  IAuthorizationModule icau = (IAuthorizationModule)co.newInstance();
+				  
+				  Collection auth_col =  icau.authorizeDocids(col, id.getUsername());
+				  
+				  Collection ret_col = new ArrayList();
+				  
+				  for (Iterator i = auth_col.iterator(); i.hasNext(); ) {
+					    String did = (String) i.next();
+ 		    		    AuthorizationResponse ap = new AuthorizationResponse(true,did);
+ 		    		    ret_col.add(ap);
+				  }
+		    		 
+				  return ret_col;
+				}
+			catch (Exception ex) {
+				logger.log(Level.SEVERE, "Unable to load Authorization Module " + callable_az_module); 
+			}	      
+      }
+      else {
+	      logger.log(Level.FINER, "Using Default Authorization Module");  
+      }      
       
       
       Iterator itr = col.iterator();

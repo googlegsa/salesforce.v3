@@ -18,6 +18,8 @@ package com.google.enterprise.connector.salesforce;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.enterprise.connector.salesforce.security.BaseAuthenticationManager;
+import com.google.enterprise.connector.salesforce.security.BaseAuthorizationManager;
 import com.google.enterprise.connector.spi.AuthenticationManager;
 import com.google.enterprise.connector.spi.AuthorizationManager;
 import com.google.enterprise.connector.spi.Session;
