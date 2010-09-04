@@ -410,6 +410,9 @@ The DBStore also provides clustering and high availability in some respects with
  different connector managers (both pointing to the same database) and that the connector instance names configured on them are identical (the xslt can be different but the connector
  name must be the same).  If one connector-manager is offline, Quartz will schedule jobs on the remaining one.  If both are up, the quartz triggers will loadbalance and fire only on one.  Since the connector instance database is the same
  both GSA's will be implicitly in sync.  </p>
+ <p>
+ Additional documentation about Quartz clustering can be found <a href="http://www.quartz-scheduler.org/docs/configuration/ConfigJDBCJobStoreClustering.html">here</a>.
+ </p>
  <p class="note">
   If two or more connector-managers are utilizing Quartz Clustering, both connector-managers must use the same java <code>user.timezone</code> setting if the connector managers run in different zones.
   Tomcat setting to specify the timezone on startup is (for example)  <code>CATALINA_OPTS="-Duser.timezone=America/Los_Angeles"</code>.
