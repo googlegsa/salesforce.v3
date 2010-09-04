@@ -41,7 +41,7 @@ public class BaseConnectorType implements ConnectorType {
   String blankform = "<tr><td>SFConnector Form</td></tr>" +
   				     "<tr><td>Username:</td><td> <input type=\"username\" size=\"65\" name=\"username\"/></td></tr>" +
   				     "<tr><td>Password:</td><td> <input type=\"password\" size=\"65\" name=\"password\"/></td></tr>" +
-  				     "<tr><td>LastQuartzSync:</td><td> <input type=\"lastsync\" size=\"35\" name=\"lastsync\"/></td></tr>" +
+  				     "<tr><td>LastQuartzSync (GMT):</td><td> <input type=\"lastsync\" size=\"35\" name=\"lastsync\"/></td></tr>" +
   				     "<tr><td>LoginSrv:</td><td> <input type=\"loginsrv\" size=\"65\" name=\"loginsrv\"/></td></tr>" +
   				     "<tr><td>Schedule:</td><td> <input type=\"schedule\" size=\"35\" name=\"schedule\"/></td></tr>" +
   				     "<tr><td>Query:</td><td>    <textarea  type=\"query\"  rows=\"10\" cols=\"65\" size=\"65\" name=\"query\"></textarea></td></tr>" +
@@ -199,8 +199,8 @@ public class BaseConnectorType implements ConnectorType {
 	   populatedform = "<tr><td>SFConnector Form</td></tr>" +
 	     "<tr><td>username:</td><td> <input type=\"username\" size=\"65\" name=\"username\" value=\"" + username + "\"/></td></tr>" +
 	     "<tr><td>Password:</td><td> <input type=\"password\" size=\"65\" name=\"password\" value=\"" + password + "\"/></td></tr>" +
-		 "<tr><td>LastQuartzSync:</td><td> <input type=\"lastsync\" size=\"35\" name=\"lastsync\" value=\"" + lastsync + "\"/></td></tr>" +
-		 "<tr><td>LastBatchRead:</td><td> <b>" + lcheckpoint + "</b></td></tr>" +
+		 "<tr><td>LastQuartzSync (GMT):</td><td> <input type=\"lastsync\" size=\"35\" name=\"lastsync\" value=\"" + lastsync + "\"/></td></tr>" +
+		 "<tr><td>LastBatchRead (GMT):</td><td> <b>" + lcheckpoint + "</b></td></tr>" +
 	     "<tr><td>LoginSrv:</td><td> <input type=\"loginsrv\" size=\"65\" name=\"loginsrv\" value=\"" + loginsrv + "\"/></td></tr>" +	     
 	     "<tr><td>Schedule:</td><td> <input type=\"schedule\" size=\"35\" name=\"schedule\" value =\"" + schedule + "\"/></td></tr>" +
 	     "<tr><td>Query:</td><td>    <textarea type=\"query\"  rows=\"10\" cols=\"65\" size=\"65\" name=\"query\">" + query + "</textarea></td></tr>" +

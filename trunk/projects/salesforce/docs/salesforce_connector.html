@@ -45,7 +45,7 @@
 <h1 id="page_title">Configuring the Google Enterprise Connector for SalesForce</h1>
 <p>Google Search Appliance software version 6.0+<br>
     Connector software version 2.0+ <br>
-    Posted July 2009<br>
+    Posted August 2010<br>
 </p>
 <br>
 
@@ -85,10 +85,14 @@ Administration pages of the admin console.</p></li>
   </li>
   <li><a href="#secsuppanch">How Security is Supported</a>
       <ol>
-          <li><a href="#ServeTimeSecurity">Serve Time User Authentication and Document
-                  Access Control</a> </li>
           <li><a href="#RequiredCred">Required User Credentials for Traversal and
-                  Indexing </a></li>
+                  Indexing </a></li>      
+          <li><a href="#ServeTimeSecurity">Serve Time User Authentication and Document Access Control</a> 
+          	<ul>
+          		<li><a href="#defaultsecmodules">Default Authentication and Authorization Module</a></li>
+          		<li><a href="#usersecmodules">User-defined, Dynamic Authentication and Authorization</a></li>
+          	</ul>
+          </li>
           </ol>
   </li>
   <li><a href="#scheduler">SalesForce checkpoint and Quartz Schedulers</a></li>
@@ -215,19 +219,35 @@ The follwoing link describe generating the relationship objects in SalesForce:
 
 <h2><a name="RequiredCred" id="RequiredCred"></a>Required User Credentials  for Traversal
     and Indexing </h2>
-<p>At crawl time, the username/password the Connector uses acquire data from salesforce must have atleast read access to all the
+<p>At crawl time, the username/password the Connector uses to acquire data from salesforce must have atleast read access to all the
 fields requested in the select query to get the data. </p>
 <p>
 Each time the Quartz scheduler gets invoked, the connector logs into SalesForce and acquires a new sessionID to do that traversal set.</p>
 
 
-<h2><a name="ServeTimeSecurity" id="ServeTimeSecurity"></a>Serve Time User Authorization
-    and Document Access Control </h2>
+<h2><a name="ServeTimeSecurity" id="ServeTimeSecurity"></a>Serve Time User Authentication/Authorization and Document Access Control </h2>
 <p>At serve time, the Google Search Appliance supports document-level authorization
-    for each search user such that only those documents a given user can view normally in SalesForce are show in the GSA results. </p>
-<p>A connector feed document will get classified as public or secure by setting the  <i><font color="green">PROPNAME_ISPUBLIC</font></i> field in the <a href="#Configurereqxslt">Response XSLT</a> .  
+    for each search user such that only those documents a given user can view normally in SalesForce gets shown in the GSA results. </p>
+<p>A connector fed document will get classified as public or secure by setting the  <i><font color="green">PROPNAME_ISPUBLIC</font></i> field in the <a href="#Configurereqxslt">Response XSLT</a> .  
 After a document is indexed, the secure/public flag will remain in that state until the document is reindexed with a new SPI parameter.
 </p>
+
+<p>
+The salesforce connector supports various mechanisms to verify a users identity and authorize documents:  
+<ul> 
+<li>Default Authentication: The GSA will provide the connector with the search users username and password.  The connector will
+login to salesforce as that user and acquire his/her sessionID with salesforce.</li>
+<li>User-Defined Authentication Module:  The GSA will first provide the user a username/password for the search user but the connector
+will load a user-defined class to validate the credentials with any arbitrary mechanism (eg, LDAP, SSO, etc)</li>
+<li>Default Authorization:  The GSA will use the users sessionID acquired from the Default Authentication login to verify
+access to salesforce URLs by selecting documents from salesforce as that user.</li>
+<li>User-Defined Authorization Module: The GSA will provide the salesforce connector a userID and a list of documents the user
+is requesting access to.  The connector will load a user-defined class which will use whatever mechanism necessary (LDAP group based on userID,
+etc) to verify if the user can see those documents.</li>
+
+</p>
+
+<h3><a name="defaultsecmodules" id="defaultsecmodules"></a>Default Authentication and Authorization Module</h3>
 
 <p>If a document is marked secure, when a user performs a secure search on the GSA, the user is prompted to enter the username/password for <b>SalesForce</b>.  The connector connects
 to SalesForce and attempts to login with the provided username and passowrd.  Upon successful login, the sessionID for the user is used by the Connector to create an authorization
@@ -252,6 +272,40 @@ NOTE:  In Salesforce, the doucment ID is unique and is considered to be the prim
 the 'ID' field must be retrieved (eg select case.ID from...  or select account.ID from ...) and used as the docID in the XLST.
 </p>
 
+<p class="note">
+The Default Authentication/Authorization modules are loaded and used automatically if the startup JVM arguments to override them are not used.
+</p>
+
+<h3><a name="usersecmodules" id="defaultsecmodules"></a>User-defined Authentication and Authorization Modules</h3>
+<p>
+User-defined modules allows customers to create custom classes the salesforce connector will use
+for authentication and authorization.  That is, the a customer can write a java class which the connector can delegate authentication and authorization to.  Once
+the custom classes are written and Tomcat is started with the correct settings, when the connector is asked to authenticate a user or authorize a document collection, 
+the custom class will get loaded by the connector and delegate authentication and/or authorization.
+</p>
+<p>
+Custom Authentication modules must implement the <code>com.google.enterprise.connector.salesforce.security.IAuthenticationModule</code> Interface.  The GSA will forward
+the username and password to this custom class implementation.
+</p>
+<p>
+Custom Authorization modules must implement the <code>com.google.enterprise.connector.salesforce.security.IAuthorizationModule</code> Interface.  The GSA will forward
+the username and a list of documents to authorize to this custom class implementation.
+</p>
+<p>
+The salesforce connector comes built-in with two custom/loadable modules as examples:  PermissiveAuthentication and PermissiveAuthorization.  These two class implementations
+are in the com.google.enterprise.connector.salesforce.security module and will authentication and authorize any user and document.
+</p>
+<p>
+Once the customer authentication or authorization class is written, it should get placed inside the <i>connector-manager/WEB-INF/lib</i> folder or directly complied into
+the salesforce connector.  Placing the compiled custom class into the WEB-INF/lib folders allows the JVM classloader to find the custom class.
+</p>
+<p>
+Finally, Tomcat must get started with startup arguments specifying the which custom class to load per instance.  For example, if a connector instnace name is <i>myinstance</i>, the 
+following <code>CATALINA_OPTS</code> settings will load and enable these the built-in Permissive modules (modules that authenticate all users and authorize all documents):
+<pre class="code">
+CATALINA_OPTS="-DAUmodule_myinstance=com.google.enterprise.connector.salesforce.security.PermissiveAuthentication -DAZmodule_myinstance=com.google.enterprise.connector.salesforce.security.PermissiveAuthorization"
+</pre>
+</p>
 
 
 <h1><a name="scheduler" id="scheduler"></a>Connector-manager checkpoint and Connector Quartz Scheduler</h1>
@@ -266,10 +320,9 @@ The Quartz scheduler thread is basically a cron scheduled job which gets invoked
 the connector will login to salesforce and attempt to retrieve all the documents that has changed after the last time the quartz scheduler ran. So if the quartz scheduler 
  runs and finds a set of documents, it will write them to the store (a file) and later on a separate thread, the connector-manager will read the store (file), 
 transform it and use that as a feed into the GSA.
-</p>
 <br/>
 <a href="http://www.opensymphony.com/quartz/">http://www.opensymphony.com/quartz/</a>
-
+</p>
 
 <p>
 <b>ConnectorManager Thread:</b>
@@ -315,7 +368,7 @@ automatically drop the per-instance table when a connector is deleted from the G
 <br/>
  The Datasource MUST be called jdbc/ConnectorDS<br/>
  TOMCAT setup <b>/connector-manager/WEB-INF/web.xml</b><br/>
-  <i>
+ <i xclass="prettyprint">
  &lt;resource-ref&gt;<br/>
       &lt;description&gt;Connector DB Connection&lt;/description&gt;<br/>
       &lt;res-ref-name&gt;jdbc/ConnectorDS&lt;/res-ref-name&gt;<br/>
@@ -323,7 +376,7 @@ automatically drop the per-instance table when a connector is deleted from the G
       &lt;res-auth&gt;Container&lt;/res-auth&gt;<br/>
   &lt;/resource-ref&gt;<br/></i>
  <br/>
- and for exmple in in <b>TOMCAT_ROOT/conf/context.xml:</b><br/><i>
+ and for exmple in in <b>TOMCAT_ROOT/conf/context.xml:</b><br/><i xclass="prettyprint">
    &lt;Resource name="jdbc/ConnectorDS" auth="Container" type="javax.sql.DataSource"<br/>
                maxActive="100" maxIdle="30" maxWait="10000"<br/>
                username="&lt;DBUSERNAME&gt;" password="&lt;DBPASSWORD&gt;" driverClassName="com.mysql.jdbc.Driver"<br/>
@@ -352,7 +405,10 @@ The DBStore also provides clustering and high availability in some respects with
  <b>same</b> connector instance name, they will share the same JobStore and quartz will loadbalance and perform automatic failover of triggers.  Its imperative that both GSA's use 
  different connector managers (both pointing to the same database) and that the connector instance names configured on them are identical (the xslt can be different but the connector
  name must be the same).  If one connector-manager is offline, Quartz will schedule jobs on the remaining one.  If both are up, the quartz triggers will loadbalance and fire only on one.  Since the connector instance database is the same
- both GSA's will be implicitly in sync.
+ both GSA's will be implicitly in sync.  </p>
+ <p class="note">
+  If two or more connector-managers are utilizing Quartz Clustering, both connector-managers must use the same java <code>user.timezone</code> setting if the connector managers run in different zones.
+  Tomcat setting to specify the timezone on startup is (for example)  <code>CATALINA_OPTS="-Duser.timezone=America/Los_Angeles"</code>.
 </p>
 <p>
 Finally, the data that is stored in the StoreTypes is the raw SOAP response which means a GSA reading the store can transform it with any stylesheet.  For example, if two GSAs are running
@@ -377,12 +433,13 @@ process for the Google Enterprise Connector for SalesForce</p>
     </ul>
 <h2><a id="installConnector" name="installConnector"></a>Installing the Connector Manually </h2>
 
-<p>The following assumes you do not have a connector-manager installed yet.  If you do, just skip over the relavent sections</p>
-<p>To install the connector manually on Apache Tomcat, follow the 
-instructions given below:</p>
+<p>To install the connector manually on Apache Tomcat, follow the instructions given below:</p>
 <ol>
-    <li>Download and install Sun Java 6+ JDK</li>
-    <li>Download and install Apache Tomcat 6.0+ (.zip/.tar version). If windows, extract only to c:\apache-tomcat-6.0.26\.  Set tomcat to use to use the Sun JDK</li>
+    <li>Download and install Sun Java 6 JDK (eg: jdk1.6.0_20) 
+      <p>The distribution salesforce connector is compiled with 1.6 compatilbity.  To compile against any other newer version,
+      edit the build.xml javac target and rebuild locally.</p>
+    </li>
+    <li>Download and install Apache Tomcat 6.0+ (.zip/.tar version). If windows, extract only to c:\apache-tomcat-6.0.26\.  Set tomcat to use to use the Sun JDK 6</li>
 	<li>Download and unzip the connector manager into the webapp folder
    <a href="http://code.google.com/p/google-enterprise-connector-manager/">http://code.google.com/p/google-enterprise-connector-manager/</a>
    such that the war file is exploded as  webapps/connector-manager/
@@ -466,7 +523,7 @@ If you get results coming back, the login user,password and query can be used in
 The specific fields returned by the SOAP query wll be shown in the TestClient.log file that gets generated.
  The XSLT needs to transform the SOAP response into the DTD that complies with the Connector Documentlist (please see the connector developers guide for more info):
 <p align="left">
-<pre>
+<pre class="prettyprint">
 <font color="green" size="2">
 &lt;!ELEMENT content ( #PCDATA ) &gt;
 &lt;!ATTLIST content encoding (none|base64|base64binary) "none" #IMPLIED &gt;
@@ -793,7 +850,7 @@ time' used for checkpoints.  See javadocs for <i><a href="http://google-enterpri
 <p>If the XSLT used in a connector has the ISPUBLIC SPI header set to 'false', the the documents will get considered secure and the Authentication/Authorization (AU/AZ) 
 process will get enabled.  See the section on <a name="#ServeTimeSecurity">Serve Time User Authorization and Document Access Control</a>
 <br/>
-This section describes the authorization query the connector will run using the <b>users</b> sessionID with salesforce.  This query can be as simple as
+This section describes the authorization query using the <b>Default Authorization Module</b> the connector will run using the <b>users</b> sessionID with salesforce.  This query can be as simple as
 <font color="green">select case.ID from case where case.ID in ($DOCIDS)</font> depending on the documents in context for the connector.
 <br/>
 The $DOCIDS is a special wildcard reserved term that the connector uses to substitute the list of documentIDs the connector needs to authorize.  If a user is allowed to see
@@ -813,7 +870,8 @@ The other wildcard defined is $USERID which is the username for the session in c
 
 
 <h2><a name="Configureazxslt" id="Configureazxslt"></a>Configuring the Authorization XSLT</h2>
-<p>Since the Authorization query can return arbitrary data (because its dependent on the implementation and connector configuation), the SOAP response needs to get
+<p>The AuthorizationXSLT setting is used in conjunction with the Authorization Query (which is needed for the <b>Default Authorization Module</b>).
+Since the Authorization query can return arbitrary data (because its dependent on the implementation and connector configuation), the SOAP response needs to get
 transformed into a canonical form that the connector an process in a general way.  That is, an XSLT stylesheet is applied to the Authorization response to translate
 the arbitrary implementation-specific response back into a form the connector can process.  The end output of the XLST <b>must</b> be in the form
 </p>
@@ -942,7 +1000,8 @@ Alternatively, the administrator can temprorarily alter the 'add' connector inst
 <p>
 The Apache <a href="http://ant.apache.org/">Ant</a> buildfile (<a href="http://code.google.com/p/google-enterprise-connector-salesforce/source/browse/trunk/projects/salesforce/build.xml">build.xml</a>)
  is provided.  Use Sun Java 6+ and just run 'ant' on the build.xml file (first set JAVA_HOME= to jdk1.6+).  The default target is 'dist' and will compile the source and create
-the salesforce connector jar file in the dist folder.
+the salesforce connector jar file in the dist folder.  To recompile against any other version of a JDK, edit <code>&lt;javac  nowarn=&quot;true&quot;  target=&quot;1.6&quot; srcdir=&quot;${src}&quot; destdir=&quot;${tempbin}&quot;&gt;</code>
+and set the <code>target</code> appropriately.
 <br/>
 
 <h1><a id="troubanch" name="troubanch"></a>Troubleshooting</h1>
