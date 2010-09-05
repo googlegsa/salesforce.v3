@@ -874,6 +874,9 @@ the connetor knows the user is not allowed to see case.iD==documentID of (800330
 The other wildcard defined is $USERID which is the username for the session in context.   The Authorization query can use both $DOCID and $USERID in the Authorization Query.
 </p>
 
+<p class="note">
+NOTE:  The Authorization Query is used by the Default Authorization module only.  Even if other modules are loaded and enabled, this parameter is requred (but not used).
+</p>
 
 
 <h2><a name="Configureazxslt" id="Configureazxslt"></a>Configuring the Authorization XSLT</h2>
@@ -912,7 +915,9 @@ Sample Authorization XSLT:
 &lt;/xsl:stylesheet&gt;
 </pre>
 </p>
-
+<p class="note">
+NOTE:  The Authorization XLST is used by the Default Authorization module only.  Even if other modules are loaded and enabled, this parameter is requred (but not used).
+</p>
 
 
 
