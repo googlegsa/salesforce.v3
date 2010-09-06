@@ -709,8 +709,7 @@ The SPI values defines for the DOCID and DISPLAY/URL should include the primay k
 A <a href="http://code.google.com/p/google-enterprise-connector-salesforce/source/browse/trunk/projects/salesforce/res/XSLTFile.xsl">sample XLST</a> for the Response transform is referenced at the end of this article.  It demonstrates SPI headers, 
 custom meta-tags and custom implementation-specific fields.
 </p>
-<pre style="prettyprint">
-<font color="green" size="2">
+<pre>
 &lt;?xml version=&quot;1.0&quot;?&gt;
 &lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;
 		xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;
@@ -743,8 +742,7 @@ PROPNAME_SECURITYTOKEN
     &lt;documents xsl:exclude-result-prefixes=&quot;sf soapenv&quot;&gt;
 
     &lt;xsl:for-each select=&quot;/soapenv:Envelope/soapenv:Body/*[namespace-uri()='urn:enterprise.soap.sforce.com' and 
-			  (local-name()='queryResponse' or local-name()='queryMoreResponse') ]/*[namespace-uri()='urn:enterprise.soap.sforce.com' 
-			  and local-name()='result']/*[namespace-uri()
+			  (local-name()='queryResponse' or local-name()='queryMoreResponse') ]/*[namespace-uri()='urn:enterprise.soap.sforce.com' and local-name()='result']/*[namespace-uri()
 			  ='urn:enterprise.soap.sforce.com' and local-name()='records']&quot;&gt; 
     &lt;document&gt;
     &lt;!--  SPIValues  --&gt;
@@ -824,7 +822,8 @@ PROPNAME_SECURITYTOKEN
   &lt;/xsl:template&gt;
       
 &lt;/xsl:stylesheet&gt;
-</font>
+
+
 </pre>
 
 <p>
@@ -832,14 +831,15 @@ The salesforce connector provies several utility Date/Time conversion routines t
 time' used for checkpoints.  See javadocs for <i><a href="http://google-enterprise-connector-salesforce.googlecode.com/svn/trunk/projects/salesforce/javadocs/com/google/enterprise/connector/salesforce/Util.html">com.google.enterprise.connector.salesforce.Util</a></i>.
   For example, the folowing XSLT rountines  are used in the date conversions:
 </p>
-<pre style="prettyprint">
-<font color="green" size="2">
+<pre>
 &lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;
 				xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;
 				xmlns:sf=&quot;urn:sobject.enterprise.soap.sforce.com&quot;
 				xmlns:java=&quot;http://xml.apache.org/xslt/java&quot;
 				xmlns:sfeeder=&quot;com.google.enterprise.connector.salesforce.Util&quot;
  			    version=&quot;1.0&quot;&gt;
+
+
 
 &lt;xsl:template name=&quot;convertdate&quot;&gt;
    &lt;xsl:param name=&quot;sfdate&quot;/&gt;					  	   
@@ -850,7 +850,7 @@ time' used for checkpoints.  See javadocs for <i><a href="http://google-enterpri
    &lt;xsl:param name=&quot;sfdate&quot;/&gt;   					  	   
    &lt;xsl:value-of select=&quot;sfeeder:formatlmDate($sfdate)&quot;/&gt;	
 &lt;/xsl:template&gt;
-</font>
+
 </pre>
 
 <h2><a name="Configureazquery" id="Configureazquery"></a>Configuring the Authorization Query</h2>
@@ -885,20 +885,17 @@ Since the Authorization query can return arbitrary data (because its dependent o
 transformed into a canonical form that the connector an process in a general way.  That is, an XSLT stylesheet is applied to the Authorization response to translate
 the arbitrary implementation-specific response back into a form the connector can process.  The end output of the XLST <b>must</b> be in the form
 </p>
-<pre style="prettyprint">
-<font color="green" size="2">
+<pre>
 &lt;azdecisions&gt;
-	&lt;docID&gt;5003300005jZ8uAAE&lt;/docID&gt;
-	&lt;docID&gt;6003300005jZ67ABE&lt;/docID&gt;
-	&lt;docID&gt;7003300005qY5uACE&lt;/docID&gt;
+&lt;docID&gt;5003300005jZ8uAAE&lt;/docID&gt;
+&lt;docID&gt;6003300005jZ67ABE&lt;/docID&gt;
+&lt;docID&gt;7003300005qY5uACE&lt;/docID&gt;
 &lt;/azdecisions&gt;
-</font>
 </pre>
 
 <p>
 Sample Authorization XSLT:
-<pre style="prettyprint">
-<font color="green" size="2">
+<pre>
 &lt;?xml version=&quot;1.0&quot;?&gt;
 &lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;
 				xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;
@@ -916,7 +913,6 @@ Sample Authorization XSLT:
     &lt;/azdecisions&gt;
    &lt;/xsl:template&gt;
 &lt;/xsl:stylesheet&gt;
-</font>
 </pre>
 </p>
 <p class="note">
@@ -995,8 +991,7 @@ To delete documents in the GSA, the transform XSLT can be used with to detect an
 For example, suppose the select query includes the 'isDeleted' flag as in <font color='green'>select ID,CaseNumber, Description, isDeleted from case where LastModifiedDate>$LAST_SYNC_DATE LIMIT</font>.  Then
 the XSLT can look to see if isDeleted is set and set the appropriate SPI Property.
 <br/>
-<pre style="prettyprint">
-<font color="green" size="2">
+<pre>
 &lt;xsl:choose&gt;
   &lt;xsl:when test =&quot;sf:IsDeleted[.=&#39;true&#39;]&quot;&gt;
    	&lt;spiheader name=&quot;PROPNAME_ACTION&quot;&gt;delete&lt;/spiheader&gt;
@@ -1005,7 +1000,6 @@ the XSLT can look to see if isDeleted is set and set the appropriate SPI Propert
 	&lt;spiheader name=&quot;PROPNAME_ACTION&quot;&gt;add&lt;/spiheader&gt;
   &lt;/xsl:otherwise&gt;
 &lt;/xsl:choose&gt;
-</font>
 </pre>
 <br/>
 <a href="http://code.google.com/apis/searchappliance/documentation/connectors/110/connector_dev/cdg_traversing.html#PROPNAME_ACTION">http://code.google.com/apis/searchappliance/documentation/connectors/110/connector_dev/cdg_traversing.html#PROPNAME_ACTION</a><br/>
