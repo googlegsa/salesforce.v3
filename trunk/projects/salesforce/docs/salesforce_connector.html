@@ -743,7 +743,8 @@ PROPNAME_SECURITYTOKEN
     &lt;documents xsl:exclude-result-prefixes=&quot;sf soapenv&quot;&gt;
 
     &lt;xsl:for-each select=&quot;/soapenv:Envelope/soapenv:Body/*[namespace-uri()='urn:enterprise.soap.sforce.com' and 
-			  (local-name()='queryResponse' or local-name()='queryMoreResponse') ]/*[namespace-uri()='urn:enterprise.soap.sforce.com' and local-name()='result']/*[namespace-uri()
+			  (local-name()='queryResponse' or local-name()='queryMoreResponse') ]/*[namespace-uri()='urn:enterprise.soap.sforce.com' 
+			  and local-name()='result']/*[namespace-uri()
 			  ='urn:enterprise.soap.sforce.com' and local-name()='records']&quot;&gt; 
     &lt;document&gt;
     &lt;!--  SPIValues  --&gt;
