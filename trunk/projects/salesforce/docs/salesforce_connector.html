@@ -471,6 +471,7 @@ Edit the logging.properties and set the path for the <i><font color="green">java
 </li>
     <li>(If using DBStore) Install MySQL (set max_allowed_packet=32M) and create new database called <i>connectordb</i> with a default character set of latin1</li>
     <li>(If using DBStore) Edit the Tomcat server.xml and WEB-INF/web.xml files as described in the <a href="#store">"Connector StoreTypes"</a> section.</li>
+    <li>(If using DBStore) Add the <a href="http://dev.mysql.com/downloads/connector/j/5.0.html">MySQL JDBC Driver</a> to the TOMCAT /lib folder.</li>        
     <li>Restart the Tomcat server. </li>
     <li>To confirm whether the Tomcat server has restarted correctly and the 
         connector is installed, navigate to the <font face="Courier New">$CATALINA_HOME/webapps/connector-manager/WEB-INF/connectors
