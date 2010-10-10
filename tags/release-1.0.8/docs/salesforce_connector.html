@@ -1,0 +1,1146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+<html><head>
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" type="text/css" href="dev_docs.css">
+<link rel="stylesheet" type="text/css" href="local_extensions.css">
+
+<!--[if IE 7]>
+  <link rel="stylesheet" type="text/css" href="http://code.google.com/css/ie7only.css" />
+<![endif]-->
+<!--[if lte IE 6]>
+  <link rel="stylesheet" type="text/css" href="http://code.google.com/css/ie6only.css" />
+<![endif]-->
+<!--[if IE]>
+  <link rel="stylesheet" type="text/css" href="http://code.google.com/css/ieonly.css" />
+<![endif]-->
+
+<!-- Add ECM product name to title -->
+<title>Google Enterprise Connector for SalesForce</title>
+</head><body id="intro_page">
+<a name="top"></a>
+
+<!-- ########## PAGE HEADER ########## -->
+<div id="header">
+
+<div id="logo">
+
+<a href="http://code.google.com/"><img src="code_sm.png" alt="Return to Google Code homepage" border="0"></a></div>
+
+<h1 id="doc_title">Google Search Appliance</h1>
+</div> 
+<!-- ########## END PAGE HEADER ########## -->
+
+
+<div id="wrapper">
+  <!-- ########## SIDE NAVIGATION ########## -->
+
+
+
+<!-- ########## PAGE CONTENT ########## -->
+
+<div id="pagecontent">
+
+<h1 id="page_title">Configuring the Google Enterprise Connector for SalesForce</h1>
+<p>Google Search Appliance software version 6.0+<br>
+    Connector software version 2.0+ <br>
+    Posted August 2010<br>
+</p>
+<br>
+
+<h1><font color="red">NOTE:  The SalesForce Connector is NOT supported by Google</font></h1>
+<br/>
+<p>This document is for Google Search Appliance administrators who want to set up
+    and  manage the Google Enterprise Connector for SalesForce.
+    As prerequsites, the reader my want to familiarize themselves with the following
+<span style="background-color: rgb(255, 255, 255);">documents:</span></p>
+<ul><li><b><a href="http://code.google.com/apis/searchappliance/documentation/50/connector_admin/admin_connector.html">Administering Connectors</a></b><p>This document gives an overview of how
+connectors work and describes the configuration steps common to all the connectors. </p></li></ul>
+
+<ul><li><b><a href="http://www.salesforce.com/us/developer/docs/api/index.htm">SalesForce Query API</a></b>
+<p>
+This document describes SalesForce API thats used to retrieve arbitrary data from SalesForce.  Of particular importance is the Query Language and Object Relationships described in this document.
+</p>
+</ul>
+
+<ul><li><b>Google Search Appliance Help Topics</b><p> These pages describe connector independent
+configuration parameters available in the Connector
+Administration pages of the admin console.</p></li>
+    </ul>
+<p>This document is for SalesForce Server administrators and administrators who
+    install and configure the Google Search Appliance. If you are working with the
+    Google Enterprise Connector for SalesForce and you are not familiar
+    with SalesForce, work closely with a SalesForce system
+    administrator to determine the correct values for installing and configuring
+    the connector.  </p>
+
+<h1>Contents</h1>
+<ol class="toc">
+  <li><a href="#introanch">Introduction</a></li>
+  <li><a href="#versanch">Supported SalesForce  Versions</a></li>
+  <li><a href="#SupportedOS">Supported Operating Systems</a></li>
+  <li><a href="#HowIndexed">How the SalesForce objects are Indexed</a></li>
+  <li><a href="#schsuppanch">Objects that are Indexed </a>
+  </li>
+  <li><a href="#secsuppanch">How Security is Supported</a>
+      <ol>
+          <li><a href="#RequiredCred">Required User Credentials for Traversal and
+                  Indexing </a></li>      
+          <li><a href="#ServeTimeSecurity">Serve Time User Authentication and Document Access Control</a> 
+          	<ol>
+          		<li><a href="#defaultsecmodules">Default Authentication and Authorization Module</a></li>
+          		<li><a href="#usersecmodules">User-defined, Dynamic Authentication and Authorization</a></li>
+          	</ol>
+          </li>
+     </ol>
+  </li>
+  <li><a href="#scheduler">SalesForce checkpoint and Quartz Schedulers</a></li>
+  <li><a href="#store">SalesForce Connector StoreTypes</a></li>
+
+
+  <li><a href="#instanch">Installing the Google Enterprise Connector for SalesForce </a>
+      <ol class="toc">
+	<li><a href="#installConnector">Installing the Connector Manually</a></li>
+    </ol> 
+  </li>	
+
+
+  <li><a href="#confanch">Configuring the Connector onthe Admin Console </a>
+      <ol>
+          <li><a href="#TestClient">Run the APEX Explorer and TestClient</a>         </li>
+          <li><a href="#RegisterCM">Registering the Connector Manager</a>         </li>
+          <li><a href="#Configureusername">Configuring the Username</a></li>
+          <li><a href="#Configurepassword">Configuring the Password</a></li>
+          <li><a href="#Configurelastsync">Configuring the LastSync Date</a></li>
+          <li><a href="#Configureloginsrv">Configuring the LoginServer</a></li>
+          <li><a href="#Configurecron">Configuring the Cron Schedule</a></li>
+          <li><a href="#Configurequery">Configuring the Request Query</a></li>
+          <li><a href="#Configurereqxslt">Configuring the Response XSLT</a></li>
+          <li><a href="#Configureazquery">Configuring the Authorization Query</a></li>
+          <li><a href="#Configureazxslt">Configuring the Authorization XSLT</a></li>
+          <li><a href="#ConnectorMGRSchedule">Setting the Connector Schedule</a></li>
+          <li><a href="#TraversalRate">Setting the Connector Manager Traversal Rate</a></li>
+          </ol>
+  </li>
+ 
+     <li><a href="#ForceRecrawl">Forcing a Recrawl of SalesForce Content</a></li>
+     <li><a href="#Delete">Deleting Documents</a></li>
+     <li><a href="#Build">Building from Source</a></li>
+     <li><a href="#troubanch">Troubleshooting</a>	 
+         <ol>
+             <li><a href="#Logging">Logging</a> </li>
+             <li><a href="#erranch">Error Messages</a></li>
+         </ol>
+     </li>
+     <li><a href="#relatedanch">Related Documentation</a></li>
+</ol>
+
+
+<h1><a id="introanch" name="introanch"></a>Introduction</h1>
+
+<p><code><font face="Arial">The Google Enterprise Connector for SalesForce
+</font> </code> <font face="Arial">enables the </font>Google Search Appliance to
+traverse documents/objects in SalesForce. Instances of the connector
+    fetch data directly from SalesForce via the SOAP API ( <a href="http://wiki.developerforce.com/index.php/Web_Services_API#API">http://wiki.developerforce.com/index.php/Web_Services_API#API</a>)
+ and transforms it into content feeds for the Google Search Appliance.</p>
+<h1><a id="verssanch" name="versanch"></a>Supported SalesForce Versions</h1>
+<p>This connector is supported on the following SalesForce versions:</p>
+<ul>
+    <li>SalesForce 9+</li>
+
+</ul>
+<h1><a name="SupportedOS" id="SupportedOS"></a>Supported Operating Systems</h1>
+<p>The Google Enterprise Connector for SalesForce is supported on the same operating systems as the Connector Manager 1.3.2 and 2.0  <br/>
+<a href="http://code.google.com/p/google-enterprise-connector-manager/">http://code.google.com/p/google-enterprise-connector-manager/</a></p>
+
+<h1><a name="HowIndexed" id="HowIndexed"></a>How SalesForce Objects are Indexed </h1>
+<p>The SalesForce connector uses the SalesForce WebService APIs to construct object summary documents. Data is retrieved from SalesForce using its proprietory Query language 
+over the WebService APIs.  Once the connector has data describing a SalesForce object in its entireity, it will transform it into a content feed for the connector-manager (an ultimately
+the GSA).
+</p>
+
+<p>When you configure a SalesForce connector, you provide a SOQL query describing the main object and its related objects 
+which will retrieve the data. 
+<br/><a href="http://www.salesforce.com/us/developer/docs/api/Content/sforce_api_calls_soql.htm">http://www.salesforce.com/us/developer/docs/api/Content/sforce_api_calls_soql.htm</a>
+<br/>
+<p>
+The SOQL query must already have all the Parent-Child relationships defined in Salesforce such that all the data required is available in the Query response stream.  
+The connector does not support nested queries so all the objects and related data must be available through one SQL statement.
+</p>
+<p>
+Once the data describing a SalesForce object is retrieved, it will get transformed into a content feed with meta-data and a single-page HTML representation of the of the query object.
+</p>
+
+<p>
+For example, if a connector is just supposed to index the CaseNumber and Description fields then the SOQL query could be like:
+</p>
+<ol>
+<br/>
+<b><i>select c.ID, c.CaseNumber, c.Description from Case c</i></b>
+</ol>
+<p>
+The SOAP query response would be an XML resultset of the data requested and this XML is transformed into a feed XML by a user-provided XSLT.  The connector feed then
+gets indexed by the GSA and served.  After indexing, the user can search for a case number or keywords in the description field on the GSA.  The URL Link the result
+could point directly to the Case URL in SalesForce (because the ID field itself defines the object URL in SalesForce) while the cached copy on the GSA would 
+represent the summary of object.
+</p>
+
+
+<h1><a id="schsuppanch" name="schsuppanch"></a>Objects that are Included </h1>
+<p> The SalesForce connector can retrieve any object and all its related data if its available as fields in one Query.  That is, if the connector is to index  Case or 
+Account objects, all the fields associated with that object that needs to be searchable needs to be available via one query.  The connector cannot use the resultset from one
+query to iteratively submit another one to retrive all the data.</p>
+<p>
+As in the example from the previous section,  if a Case object is unrelated to some other object, a single query for the connector could not retrieve field values
+from the unrelated field.  The SalesForce administrator must define parent-child/child-parent and other relationships such that one query can be used to retrieve all the 
+data that needs to get indexed.  A query like the following would demonstrate the parent/child and child/parent relationships which can get defined to retrieve the needed data in 
+one query:
+<ol>
+<font color="blue"> select c.ID, c.CaseNumber, c.Description c.Asset.Id, c.Asset.Name, </font><font color="red"> (Select Id, CommentBody From CaseComments)</font><font color="blue"> from Case c </font>
+</ol>
+</p>
+<p>
+The above query uses a defined parent-child relationship to retrieve the CommentBody field on the CaseComment object thats associated with the Case object.
+</p>
+<p>
+The follwoing link describe generating the relationship objects in SalesForce:
+
+<a href="http://www.salesforce.com/us/developer/docs/api/Content/sforce_api_calls_soql_relationships.htm">http://www.salesforce.com/us/developer/docs/api/Content/sforce_api_calls_soql_relationships.htm</a>
+</p>
+
+
+
+
+<h1><a id="secsuppanch" name="secsuppanch"></a>How Security is Supported</h1>
+<p>The two sections that follow describe how security is supported during the serve
+    process and during the traversal and indexing processes.</p>
+
+
+<h2><a name="RequiredCred" id="RequiredCred"></a>Required User Credentials  for Traversal
+    and Indexing </h2>
+<p>At crawl time, the username/password the Connector uses to acquire data from salesforce must have atleast read access to all the
+fields requested in the select query to get the data. </p>
+<p>
+Each time the Quartz scheduler gets invoked, the connector logs into SalesForce and acquires a new sessionID to do that traversal set.</p>
+
+<h2><a name="ServeTimeSecurity" id="ServeTimeSecurity"></a>Serve Time User Authentication/Authorization and Document Access Control </h2>
+<p>At serve time, the Google Search Appliance supports document-level authorization
+    for each search user such that only those documents a given user can view normally in SalesForce gets shown in the GSA results. </p>
+<p>A connector fed document will get classified as public or secure by setting the  <i><font color="green">PROPNAME_ISPUBLIC</font></i> field in the <a href="#Configurereqxslt">Response XSLT</a> .  
+After a document is indexed, the secure/public flag will remain in that state until the document is reindexed with a new SPI parameter.
+</p>
+
+<p>
+The salesforce connector supports various mechanisms to verify a users identity and authorize documents:  
+<ul> 
+<li>Default Authentication: The GSA will provide the connector with the search users username and password.  The connector will
+login to salesforce as that user and acquire his/her sessionID with salesforce.</li>
+<li>User-Defined Authentication Module:  The GSA will first provide the user a username/password for the search user but the connector
+will load a user-defined class to validate the credentials with any arbitrary mechanism (eg, LDAP, SSO, etc)</li>
+<li>Default Authorization:  The GSA will use the users sessionID acquired from the Default Authentication login to verify
+access to salesforce URLs by selecting documents from salesforce as that user.</li>
+<li>User-Defined Authorization Module: The GSA will provide the salesforce connector a userID and a list of documents the user
+is requesting access to.  The connector will load a user-defined class which will use whatever mechanism necessary (LDAP group based on userID,
+etc) to verify if the user can see those documents.</li>
+</ul>
+</p>
+
+<h3><a name="defaultsecmodules" id="defaultsecmodules"></a>Default Authentication and Authorization Module</h3>
+
+<p>If a document is marked secure, when a user performs a secure search on the GSA, the user is prompted to enter the username/password for <b>SalesForce</b>.  The connector connects
+to SalesForce and attempts to login with the provided username and passowrd.  Upon successful login, the sessionID for the user is used by the Connector to create an authorization
+query to determine if the documents matching the query response are visible to the user. 
+</p>
+
+<p>The connectormanager will ask SalesForce  to see if a set of documents (doc1, doc2, doc3...doc10) is visible to the user given the session he/she has with SalesForce.
+At that time, the connector submits an authorization query such as <i><font color="green">select c.ID, c.Number, c.Description from case c where case.ID in (doc1, doc2, doc3...doc10)</font></i>. 
+If a user is not allowed to see a document, the authorziation query will not return that document in the reply and consequently will not get authorized for viewing.
+</p>
+<p>
+The authorization query could select arbitrary data and the authroized document set needs to get processed by the connector in a generic way.  To achieve this, the configurable
+authorizaiton query needs to get coupled with an XSLT which transform the arbitrary SOAP response into a canonical/processable XML form the connector can understand.  
+</p>
+<p>The full flow for the Authorization process would be:
+<ul>
+   connector (username/password) -->Authentiation Login (sessionID)-->Authorization Query --> Response --> Authorization XLST (transform response)--> connector (with doucments authorized)
+</ul>
+</p>
+<p>
+NOTE:  In Salesforce, the doucment ID is unique and is considered to be the primary key embedded in the URL.  That is, no matter what query is used
+the 'ID' field must be retrieved (eg select case.ID from...  or select account.ID from ...) and used as the docID in the XLST.
+</p>
+
+<p class="note">
+The Default Authentication/Authorization modules are loaded and used automatically if the startup JVM arguments to override them are not used.
+</p>
+
+<h3><a name="usersecmodules" id="defaultsecmodules"></a>User-defined Authentication and Authorization Modules</h3>
+<p>
+User-defined modules allows customers to create custom classes the salesforce connector will use
+for authentication and authorization.  That is, the a customer can write a java class which the connector can delegate authentication and authorization to.  Once
+the custom classes are written and Tomcat is started with the correct settings, when the connector is asked to authenticate a user or authorize a document collection, 
+the custom class will get loaded by the connector and delegate authentication and/or authorization.
+</p>
+<p>
+Custom Authentication modules must implement the <code>com.google.enterprise.connector.salesforce.security.IAuthenticationModule</code> Interface.  The GSA will forward
+the username and password to this custom class implementation.
+</p>
+<p>
+Custom Authorization modules must implement the <code>com.google.enterprise.connector.salesforce.security.IAuthorizationModule</code> Interface.  The GSA will forward
+the username and a list of documents to authorize to this custom class implementation.
+</p>
+<p>
+The salesforce connector comes built-in with two custom/loadable modules as examples:  PermissiveAuthentication and PermissiveAuthorization.  These two class implementations
+are in the com.google.enterprise.connector.salesforce.security module and will authentication and authorize any user and document.
+</p>
+<p>
+Once the customer authentication or authorization class is written, it should get placed inside the <i>connector-manager/WEB-INF/lib</i> folder or directly complied into
+the salesforce connector.  Placing the compiled custom class into the WEB-INF/lib folders allows the JVM classloader to find the custom class.
+</p>
+<p>
+Finally, Tomcat must get started with startup arguments specifying the which custom class to load per instance.  For example, if a connector instnace name is <i>myinstance</i>, the 
+following <code>CATALINA_OPTS</code> settings will load and enable these the built-in Permissive modules (modules that authenticate all users and authorize all documents):
+<font size=2 color="green">
+<pre class="code">
+CATALINA_OPTS="-DAUmodule_myinstance=com.google.enterprise.connector.salesforce.security.PermissiveAuthentication"
+</pre>
+<pre class="code">
+CATALINA_OPTS="-DAZmodule_myinstance=com.google.enterprise.connector.salesforce.security.PermissiveAuthorization"
+</pre>
+</font>
+</p>
+
+
+<h1><a name="scheduler" id="scheduler"></a>Connector-manager checkpoint and Connector Quartz Scheduler</h1>
+<p>
+The SalesForce connector basically runs two independent threads of operation:  the connector-manager traversal checkpoint and the SalesForce Connector Quartz scheduler.  These
+two independent processes all runs within the connector-manager and connector and together feeds documents into the GSA.  The connector-manager thread constantly polls the connector
+for new document sets (response batches) that got downloaded from SalesForce after checkpoint state date.  The state file for the connector which describe the last
+batch it read can be found at <font color="blue">/WEB-INF/connectors/salesforce-connector/connectorname/connectorname_state.txt</font>
+</p>
+<p>
+The Quartz scheduler thread is basically a cron scheduled job which gets invoked periodically.  Once invoked,
+the connector will login to salesforce and attempt to retrieve all the documents that has changed after the last time the quartz scheduler ran. So if the quartz scheduler 
+ runs and finds a set of documents, it will write them to the store (a file) and later on a separate thread, the connector-manager will read the store (file), 
+transform it and use that as a feed into the GSA.
+<br/>
+<a href="http://www.opensymphony.com/quartz/">http://www.opensymphony.com/quartz/</a>
+</p>
+
+<p>
+<b>ConnectorManager Thread:</b>
+</p>
+<p align="center" >
+<img width="60%"  src="cmthread.png"/>
+</p>
+<p>
+<b>Quartz Thread:</b>
+</p>
+<p align="center" >
+<img width="60%" src="quartzthread.png"/>
+</p>
+
+<p>
+<b>Both ConnectorManager and Quartz Threads:</b>
+</p>
+<p align="center" >
+<img width="60%"  src="combined.png"/>
+</p>
+
+<h1><a name="store" id="store"></a>SalesForce Connector StoreTypes</h1>
+<p>
+The SOAP response XML documents downloaded from SalesForce by the Quartz Thread can be stored in several different ways.  The StoreTypes are configurable per connector
+ and are used to optionally save the documents for later use by another GSA or for failure recovery.
+<p>
+The various StoreTypes available:
+</p>
+<ul>
+<li>MemoryStore:  SOAP response documents are stored in memory until its read by the connector-manager thread.  After its read, the entry is removed from memory automatically.
+<li>FileStore:  The SOAP response is saved in the filesystem under <i><font color="blue">/WEB-INF/connectors/salesforce-connector/connectorname/filestore</font></i>  folder.   Below that folder, the subdirectores
+are arranged such that file representing a single query response can be found in a folder describing the time it schedule ran:  eg 200901021139 would be in 2009/01/02/ and so on.
+
+<li>JDBCStore:  SOAP responses will get compressed stored in a database.  Each connector instance will use the same database but will read/write from its own indexed table.<br/>
+The Tomcat container hosting the connector-manager/connector <b>must</b> be configured for a MySQL (the only db-type currently supported) DataSource called <b><i>jdbc/ConnectorDS</i></b><br/>
+Each connector instances reads/writes from its own table called <i>i_instancename</i> as in 'i_caseconnector'.  The three colums in each instance table is defined as:  
+<br/><b>crawl_set</b>  (PRIMARY KEY) of type DECIMAL.  Holds the per-roundtrip SOAP response timestamp as 200901021139.0000, 200901021139.0001, 200901021139.0002, etc
+<br/><b>insert_timestamp</b>   (TIMESTAMP).  Holds the date/time this row was inserted
+<br/><b>crawl_data</b>   (MEDIUMTEXT) in COMPRESSED <font color=red>BASE64</font> format.  Holds the actual SOAP response per roundtrip data in COMPRESSED format.  To view the uncompressed data, a select query would need to be
+like <i>SELECT UNCOMPRESS(crawl_data) FROM i_caseconnector WHERE....</i><br/>
+<br/>If the per-instance table does not exist when the connector startsup, it will automatically create the table called i_connectorinstance.  Currently the connector does not
+automatically drop the per-instance table when a connector is deleted from the GSA's admin console (the DROP schema must be executed by SQL commandline).
+<br/>
+ The Datasource MUST be called jdbc/ConnectorDS<br/>
+ TOMCAT setup <b>/connector-manager/WEB-INF/web.xml</b><br/>
+ <i xclass="prettyprint">
+ &lt;resource-ref&gt;<br/>
+      &lt;description&gt;Connector DB Connection&lt;/description&gt;<br/>
+      &lt;res-ref-name&gt;jdbc/ConnectorDS&lt;/res-ref-name&gt;<br/>
+      &lt;res-type&gt;javax.sql.DataSource&lt;/res-type&gt;<br/>
+      &lt;res-auth&gt;Container&lt;/res-auth&gt;<br/>
+  &lt;/resource-ref&gt;<br/></i>
+ <br/>
+ and for exmple in in <b>TOMCAT_ROOT/conf/context.xml:</b><br/><i xclass="prettyprint">
+   &lt;Resource name="jdbc/ConnectorDS" auth="Container" type="javax.sql.DataSource"<br/>
+               maxActive="100" maxIdle="30" maxWait="10000"<br/>
+               username="&lt;DBUSERNAME&gt;" password="&lt;DBPASSWORD&gt;" driverClassName="com.mysql.jdbc.Driver"<br/>
+               url="jdbc:mysql://&lt;DB_HOST&gt;:3306/connectordb?autoReconnect=true"/&gt;<br/></i>
+   <br/>
+  For MySQL, create the database (in the above example, the database is 'connectordb') and allow the user remote login capabilities per: <a href="http://dev.mysql.com/doc/refman/6.0/en/adding-users.html">http://dev.mysql.com/doc/refman/6.0/en/adding-users.html</a>
+  <br/>
+  <!-- 
+  NOTE:  Set the LANG=en_us.utf-8 environment variable for MySQL and LINUX.  If possible, set the character encoding for MySQL to UTF-8
+   -->
+   Note: When setting up MySQL, set max_allowed_packet=32M under [mysqld] in the conf file and when creating the database, set the character encoding to 'latin1' (eg: <i>create database connectordb default character set latin1</i>).
+  </p>
+ 
+
+
+</ul>
+</p>
+<p>
+One consequence of using the FileStore (if mounted on NFS or SAN) and JDBCStore is that a group of GSA's can share the same store data.  That is, if a cluster of 3 GSA's all need
+to serve the same SalesForce Data, one GSA's quartz can run and write data to a shared filesystem.  The other two GSAs can read the sharedfiles and process them as they arrive.
+Effectively, all three GSAs are in sync but only one GSA actually ever traverses SalesForce (the quartz on the other two are disabled).
+</p>
+<p>
+The DBStore also provides clustering and high availability in some respects with Quartz.  If the connector detects a DBStore, in addition to creating the connector instance tables,
+ Quartz clustering tables are also generated.  This means the JobStore for quartz (scheduling, etc) is saved to a database.  If two separate GSAs share the same database and have the
+ <b>same</b> connector instance name, they will share the same JobStore and quartz will loadbalance and perform automatic failover of triggers.  Its imperative that both GSA's use 
+ different connector managers (both pointing to the same database) and that the connector instance names configured on them are identical (the xslt can be different but the connector
+ name must be the same).  If one connector-manager is offline, Quartz will schedule jobs on the remaining one.  If both are up, the quartz triggers will loadbalance and fire only on one.  Since the connector instance database is the same
+ both GSA's will be implicitly in sync.  </p>
+ <p>
+ Additional documentation about Quartz clustering can be found <a href="http://www.quartz-scheduler.org/docs/configuration/ConfigJDBCJobStoreClustering.html">here</a>.
+ </p>
+ <p class="note">
+  If two or more connector-managers are utilizing Quartz Clustering, both connector-managers must use the same java <code>user.timezone</code> setting if the connector managers run in different zones.
+  Tomcat setting to specify the timezone on startup is (for example)  <code>CATALINA_OPTS="-Duser.timezone=America/Los_Angeles"</code>.
+</p>
+<p>
+Finally, the data that is stored in the StoreTypes is the raw SOAP response which means a GSA reading the store can transform it with any stylesheet.  For example, if two GSAs are running
+whereby one is for a company's Engineering department and the other is for HR, the two GSAs can index and show different cached copies to each group.  The data in  the StoreType
+is the same but the XSLT to feed it to the connector-manager could be different: the engineering look+feel could be different and even include the GSA-specific googleon/googleoff
+tags  
+<br/>(<a href="http://code.google.com/apis/searchappliance/documentation/46/admin_crawl/Preparing.html#pagepart">http://code.google.com/apis/searchappliance/documentation/46/admin_crawl/Preparing.html#pagepart</a>)
+</p>
+<p align="center">
+<img  width="60%"  src="common.png"/>
+</p>
+
+
+
+
+<h1><a id="instanch" name="instanch"></a>Installing the Google Enterprise Connector
+    for SalesForce </h1>
+<p>This section describes the installation prerequisites and installation 
+process for the Google Enterprise Connector for SalesForce</p>
+<ul>
+    <li><a href="#installConnector">Installing the Connector Manually</a></li>
+    </ul>
+<h2><a id="installConnector" name="installConnector"></a>Installing the Connector Manually </h2>
+
+<p>To install the connector manually on Apache Tomcat, follow the instructions given below:</p>
+<ol>
+    <li>Download and install Sun Java 6 JDK (eg: jdk1.6.0_20) 
+      <p>The distribution salesforce connector is compiled with 1.6 compatilbity.  To compile against any other newer version,
+      edit the build.xml javac target and rebuild locally.</p>
+    </li>
+    <li>Download and install Apache Tomcat 6.0+ (.zip/.tar version). If windows, extract only to c:\apache-tomcat-6.0.26\.  Set tomcat to use to use the Sun JDK 6</li>
+	<li>Download and unzip the connector manager into the webapp folder
+   <a href="http://code.google.com/p/google-enterprise-connector-manager/">http://code.google.com/p/google-enterprise-connector-manager/</a>
+   such that the war file is exploded as  webapps/connector-manager/
+</li>
+	<li>Download the SalesForce connector and supporting files from <a href="http://code.google.com/p/google-enterprise-connector-salesforce/">http://code.google.com/p/google-enterprise-connector-salesforce/</a>
+	
+	<br/>
+	 Copy <br/> 
+	    salesforce-connector-{version}-all.jar<br/> 
+	    <a href="http://google-enterprise-connector-salesforce.googlecode.com/svn/trunk/projects/salesforce/lib/commons-collections-3.2.jar">commons-collections-3.2.jar</a><br/> 
+	    <a href="http://google-enterprise-connector-salesforce.googlecode.com/svn/trunk/projects/salesforce/lib/quartz-all-1.6.5.jar">quartz-all-1.6.5.jar</a><br/> 
+	    <a href="http://google-enterprise-connector-salesforce.googlecode.com/svn/trunk/projects/salesforce/lib/commons-codec-1.3.jar">commons-codec-1.3.jar</a><br/>
+	into the Tomcat <font color="green">webapps/connector-manager/WEB-INF/lib/</font>  folder
+</li>
+	<li>
+	
+Copy <a href="http://google-enterprise-connector-salesforce.googlecode.com/svn/trunk/projects/salesforce/res/logging.properties">logging.properties</a> into <br/>
+	/webapps/connector-manager/WEB-INF/classes/
+    </li>
+<li>
+Edit the logging.properties and set the path for the <i><font color="green">java.util.logging.FileHandler.pattern</font></i> (if necessary)
+</li>
+    <li>(If using DBStore) Install MySQL (set max_allowed_packet=32M) and create new database called <i>connectordb</i> with a default character set of latin1</li>
+    <li>(If using DBStore) Edit the Tomcat server.xml and WEB-INF/web.xml files as described in the <a href="#store">"Connector StoreTypes"</a> section.</li>
+    <li>(If using DBStore) Add the <a href="http://dev.mysql.com/downloads/connector/j/5.0.html">MySQL JDBC Driver</a> to the TOMCAT /lib folder.</li>        
+    <li>Restart the Tomcat server. </li>
+    <li>To confirm whether the Tomcat server has restarted correctly and the 
+        connector is installed, navigate to the <font face="Courier New">$CATALINA_HOME/webapps/connector-manager/WEB-INF/connectors
+            </font>directory, and verify that the <font face="Courier New">$CATALINA_HOME/webapps/connector-manager/WEB-INF/connectors/salesforce-connector</font> 
+        directory exists.	</li>
+</ol>
+<h1><a id="confanch" name="confanch"></a>Configuring the Connector on the Admin Console </h1>
+<p>This section describes tasks you must perform on the Google Search
+    Appliance Admin Console to configure the connector and the crawl patterns required
+    by the connector.  A sample screenshot of the GSA configuration is shown <a href="http://code.google.com/p/google-enterprise-connector-salesforce/source/browse/trunk/projects/salesforce/docs/connector_config.jpg"/>here.</a></p>
+<p>Ensure that you complete all of the tasks described in the following sections:</p>
+<ul>
+          <li><a href="#TestClient">Run the APEX Explorer and TestClient</a></li>
+          <li><a href="#RegisterCM">Registering the Connector Manager</a></li>
+          <li><a href="#Configureusername">Configuring the Username</a></li>
+          <li><a href="#Configurepassword">Configuring the Password</a></li>
+          <li><a href="#Configurelastsync">Configuring the LastSync Date</a></li>
+          <li><a href="#Configureloginsrv">Configuring the LoginServer</a></li>
+          <li><a href="#Configurecron">Configuring the Cron Schedule</a></li>
+          <li><a href="#Configurequery">Configuring the Request Query</a></li>
+          <li><a href="#Configurereqxslt">Configuring the Response XSLT</a></li>
+          <li><a href="#Configureazquery">Configuring the Authorization Query</a></li>
+          <li><a href="#Configureazxslt">Configuring the Authorization XSLT</a></li>
+          <li><a href="#Restart">Restarting the Connector</a></li>
+          <li><a href="#Verify">Verifying that the Connector is Working</a></li>
+</ul>
+
+
+<h2><a name="TestClient" id="TestClient"></a>Run the APEX Explorer and TestClient</h2>
+<p>The first step in using the SalesForce connector is to run the APEX Explorer to derive the Query for the connector. </p>
+
+<ol><li>Download and install the APEX Explorer provided by SalesForce <a href="http://wiki.developerforce.com/index.php/Apex_Explorer">http://wiki.developerforce.com/index.php/Apex_Explorer</a>
+<br/>
+Login to your SalesForce Production or Sandbox environment per <a href="http://www.salesforce.com/us/developer/docs/api/Content/implementation_considerations.htm">http://www.salesforce.com/us/developer/docs/api/Content/implementation_considerations.htm</a>
+ and construct a simple query the connector should use.  For example, try <font color="green">select ID,CaseNumber, Description from Case</font> or something similiar thats appropriate to your environment.
+<br/>
+If you get results coming back, the login user,password and query can be used in the salesforce connector.
+</li>
+<li>
+<p>
+	To run the TestClient and just get the XML returned, edit the sample <a href="http://code.google.com/p/google-enterprise-connector-salesforce/source/browse/trunk/projects/salesforce/res/init.properties">init.properties</a>
+	 file downloaded from the SalesForce Connector webiste (<a href="http://code.google.com/p/google-enterprise-connector-salesforce/source/browse/#svn/trunk/projects/salesforce/res">link</a>) and run the 
+	following in the folder where you downloaded:  (replace ':' with ';' for Windows and use SUN java 6+)
+	<br/>
+	<font color="green">java -cp .:salesforceconnector-(version)-all.jar com.google.enterprise.connector.salesforce.TestUtility init.properties </font>
+	<br/>
+	The raw SOAP response (and transform, if specified) will get created per cursor in timestamp-based folders in the current directory.
+	<br/>
+	You may have to reset and append a new SecurityToken if the TestClient is run from an IP that isn't trusted by SalesForce.  A new token can be acquired by logging into
+	SalesForce and navigating to  "Setup-->My Personal Information-->Reset Security Token".  The new token will get emailed to the address associated with the account.
+      The new password for the TestClient will be the combination of the oldpassword and new security token together.
+</p>
+
+</li>
+    <li>Create an XSLT to transform the SOAP response XML into the Feed the GSA can process.  A <a href="http://code.google.com/p/google-enterprise-connector-salesforce/source/browse/trunk/projects/salesforce/res/XSLTFile.xsl">sample XSLT</a> is provided
+    which transforms the sample Case query into HTML documents.  The SOAP response will be of the form shown in <a href="http://wiki.developerforce.com/index.php/Enterprise_Query">http://wiki.developerforce.com/index.php/Enterprise_Query</a>.  
+The specific fields returned by the SOAP query wll be shown in the TestClient.log file that gets generated.
+ The XSLT needs to transform the SOAP response into the DTD that complies with the Connector Documentlist (please see the connector developers guide for more info):
+<p align="left">
+<pre class="prettyprint">
+<font color="green" size="2">
+&lt;!ELEMENT content ( #PCDATA ) &gt;
+&lt;!ATTLIST content encoding (none|base64|base64binary) "none" #IMPLIED &gt;
+&lt;!ELEMENT document ( spiheaders, metadata, content ) &gt;
+&lt;!ELEMENT documents ( document+ ) &gt;
+&lt;!ELEMENT meta ( #PCDATA ) &gt;
+&lt;!ATTLIST meta name NMTOKEN #REQUIRED &gt;
+&lt;!ELEMENT metadata ( meta+ ) &gt;
+&lt;!ELEMENT spiheader ( #PCDATA ) &gt;
+&lt;!ATTLIST spiheader name NMTOKEN #REQUIRED &gt;
+&lt;!ELEMENT spiheaders ( spiheader+ ) &gt;
+</font>
+</pre>
+</p>
+<br/>
+<p>
+For example: <br/>
+<font color="green" size="2">
+<pre>
+&lt;documents&gt; 
+  &lt;document&gt; 
+    &lt;spiheaders&gt; 
+      &lt;spiheader name=&quot;DEFAULT_MIMETYPE&quot;&gt;text/html&lt;/spiheader&gt; 
+      &lt;spiheader name=&quot;PROPNAME_ACTION&quot;&gt;add&lt;/spiheader&gt; 
+      &lt;spiheader name=&quot;PROPNAME_CONTENTURL&quot;&gt;https://cs2.salesforce.com/5003300005jZ8uAAE&lt;/spiheader&gt; 
+      &lt;spiheader name=&quot;PROPNAME_DISPLAYURL&quot;&gt;https://cs2.salesforce.com/50033000005jZ8uAAE&lt;/spiheader&gt; 
+      &lt;spiheader name=&quot;PROPNAME_DOCID&quot;&gt;500330000005jZ8uAAE&lt;/spiheader&gt; 
+      &lt;spiheader name=&quot;PROPNAME_ISPUBLIC&quot;&gt;true&lt;/spiheader&gt; 
+      &lt;spiheader name=&quot;PROPNAME_LASTMODIFIED&quot;&gt;2009-04-21T00:25:11.000Z&lt;/spiheader&gt; 
+      &lt;spiheader name=&quot;PROPNAME_MIMETYPE&quot;&gt;text/html&lt;/spiheader&gt; 
+      &lt;spiheader name=&quot;PROPNAME_SEARCHURL&quot;/&gt; 
+      &lt;spiheader name=&quot;PROPNAME_SECURITYTOKEN&quot;/&gt; 
+    &lt;/spiheaders&gt; 
+    &lt;metadata&gt; 
+      &lt;meta name=&quot;METANAME1&quot;&gt;METAVALUE1&lt;/meta&gt; 
+      &lt;meta name=&quot;METANAME2&quot;&gt;METAVALUE2&lt;/meta&gt; 
+      &lt;meta name=&quot;METANAME3&quot;&gt;METAVALUE3&lt;/meta&gt;
+      &lt;meta name=&quot;METANAME4&quot;&gt;METAVALUE4&lt;/meta&gt;	
+    &lt;/metadata&gt; 
+    &lt;content encoding="none"&gt;&lt;![CDATA[   
+      &lt;html&gt; 
+        &lt;title&gt;Title of the doc&lt;/title&gt; 
+        &lt;body&gt;
+		document text here 
+	&lt;/body&gt; 
+      &lt;/html&gt; ]]&gt;&lt;/content&gt; 
+  &lt;/document&gt; 
+	... 
+  &lt;document&gt;
+	... 
+	... 
+  &lt;/document&gt; 
+&lt;/documents&gt; 
+</font>
+</pre>
+<br/>
+
+Then run the TextClient against the XSLT created:
+<font color="green">java -cp .:salesforceconnector.jar com.google.enterprise.connector.salesforce.TestUtility init.properties <b>XLSTFile.xsl</b></font>
+The query+transform result should show up in the log file and console and should comply with the DTD for the connector-manager.
+</p>
+<p>
+The following link describes the SPI constants and what they do in the connector: <br/> <a href="http://code.google.com/apis/searchappliance/documentation/connectors/110/connector_dev/cdg_traversing.html#SpiConstants
+">http://code.google.com/apis/searchappliance/documentation/connectors/110/connector_dev/cdg_traversing.html#SpiConstants
+</a><br/>
+The meta-tags can be any name-value pair that the GSA could make searchable as meta-tag values. <br/>
+<a href="http://code.google.com/apis/searchappliance/documentation/60/xml_reference.html#request_meta">http://code.google.com/apis/searchappliance/documentation/60/xml_reference.html#request_meta</a>
+The content the the HTML form of the object that will be searchable and displayed as the cache: copy in the results.
+</p>
+<p>Finally, if there are sections of the Response XML the administrator wishes to suppress from feeding into a particular GSA, the admin could add on the Google Search Appliance
+specific 'google-on/google-off' tags.  This could be done to suppress/not index seleted sections of a response document (see section above regarding different GSAs serving
+results to different groups) <br/> See: <a href="http://code.google.com/apis/searchappliance/documentation/60/admin_crawl/Preparing.html#pagepart">http://code.google.com/apis/searchappliance/documentation/60/admin_crawl/Preparing.html#pagepart</a>
+</p>
+</li>
+
+<h2><a name="RegisterCM" id="RegisterCM"></a>Registering the Connector Manager</h2>
+<p>Use the instructions in <a href="http://code.google.com/apis/searchappliance/documentation/50/connector_admin/admin_connector.html">Administering Connectors</a> to
+    register the newly-installed connector manager on the Admin Console. </p>
+
+<h2><a name="Configureusername" id="ConfigureCrawl"></a>Configuring the Username</h2>
+<p>Enter the username the salesforce connector will use to login to SalesForce and download the required data.  This user must have access to all the objects and related objects specified in the crawl query.
+</p>
+
+
+<h2><a name="Configurepassword" id="Configurepassword"></a>Configuring the Password</h2>
+<p>Enter the password the salesforce connector will use to login to SalesForce and download the required data.  If the connector is going to run from an untrusted IP range,
+its <b>possible</b> SalesForce will reject the login attempt unless the latest SecurityToken is sent in.  The SecurityToken can get reset by Logging into SalesForce as the connector
+user and navigating to "Setup-->My Personal Information-->Reset Security Token".</p>
+
+<h2><a name="Configurelastsync" id="Configurelastsync"></a>Configuring the LastSync Date</h2>
+<p>This parameter sets (and displays) the last time the Quartz Thread ran.  When a connector is first created, this field will be blank and could be set to any previous date in
+numeric format:  eg:  theis param can be set to: <font color="green">20000102030405</font>  (Jan 2st 2000 3:04:05am)<p>
+This parameter can get reset at anytime to force the connector to recrawl of SalesForce data that changed since the entered date.  
+
+
+<h2><a name="Configureloginsrv" id="Configureloginsrv"></a>Configuring the LoginServer</h2>
+<p>This parameter specifies the Login server to use for SalesForce.  The loginServers are different depending on if the production or sandbox enviornments and API version thats used.<p>
+<p>
+<a href="http://www.salesforce.com/us/developer/docs/api/Content/implementation_considerations.htm">http://www.salesforce.com/us/developer/docs/api/Content/implementation_considerations.htm</a>
+<br/>sandbox API 10: https://test.salesforce.com/services/Soap/c/10.0
+<br/>production API 10: https://www.salesforce.com/services/Soap/c/10.0
+<br/>
+<br/>sandbox API 17: https://test.salesforce.com/services/Soap/c/17.0
+<br/>production API 17: https://www.salesforce.com/services/Soap/c/17.0
+</p>
+
+
+<h2><a name="Configurecron" id="Configurecron"></a>Configuring the Cron Schedule</h2>
+<p>This parameter specifies the cron Schedule the Quartz Scheduler should run as.  For example, the following will run qurartz every :15 and :45 past the hour, every hour:
+<b><i><font color="green">0 15,45 * ? * *</font></i></b>
+</p>
+<p>
+<a href="http://www.opensymphony.com/quartz/api/org/quartz/CronTrigger.html">http://www.opensymphony.com/quartz/api/org/quartz/CronTrigger.html</a>
+</p>
+
+<h2><a name="Configurequery" id="Configurequery"></a>Configuring the Request Query</h2>
+<p>This parameter quite critical to the operation of the connector.  It defines what data to retrieve from SalesForce and feeds that into the XLST transform for the connector.<br/>
+The Query should be derived from the APEX explorer and <b>must</b> include all the data to index in the response.  Working with the previous example, if you want to index
+the Case information in Saleforce, the following query would return it <font color="green">select c.ID, c.CaseNumber, c.Description from Case c LIMIT 100</font>.  That one query
+should return the associated records and data that the connector should index.  If the requirement is to index the assoicated Acccount for that Case, the query must get
+altered to add on Account information.  <br/>
+As described in the <a href="#schsuppanch">Objects that are Included</a> section, you may have to define Parent-Child or Child-Parent relationships between object such that
+a single query will retrieve all the assoicated data that needs to get indexed.
+</p>
+<p>
+Note:  in SaleForce, the 'ID' field is unique and part of the URL field pointing directly to the object itself.  For example, in <font color="green">
+select c.ID, c.CaseNumber, c.Description from Case c LIMIT 100</font> suppose c.ID field  is <font color="blue">5003300005jZ8uAAE</font> and the SalesForce URL is https://cs2.salesforce.com,
+then the URL <font color="green">https://cs2.salesforce.com/5003300005jZ8uAAE</font> will give direct access to the object.  The object ID parameter is <b>required</b> and should 
+always get selected as "PROPNAME_DOCID" SPI parameter (the primary document ID for the feed).
+</p>
+<p>
+Finally, connector uses a reserved parameter in the query called <font color="green">$LAST_SYNC_DATE</font> which will always return the last time the Quartz scheduler invoked a crawl in SalesForce.
+For example, if the <a href="#Configurelastsync">LastSync</a> parameter is set to <i><b><font color="green">20000102030405</font></b></i> and the following query is run at <font color="blue">June 8th 2009, 7:22pm</font>: <br/>
+<font color="green">select ID,CaseNumber, Description from case where LastModifiedDate>$LAST_SYNC_DATE LIMIT 100</font>
+then the effective query becomes <br/> <font color="green">select ID,CaseNumber, Description from case where LastModifiedDate><i><b>2000-01-02T03:04:05Z</b> LIMIT 100</i></font>
+<br/>The connector will save the LAST_SYNC_TIME property to file with an updated value of <font color="blue">2009060818220000</font>.
+<br/>The next time the quartz scheduler is 
+run, the new query will be: <br/>
+<font color="green">select ID,CaseNumber, Description from case where LastModifiedDate><i><b></font><font color="blue">2009-06-08T18:22:00Z</b></font><font color="green"> LIMIT 100</i></font>
+</p>
+<p>
+It is strongly recommended adding in this reserved wildcard in the final query for the connector configuration.  The use of this reserved term will minimize recrawling of
+content that hasn't changed in SalesForce.  The SPI header for th eprimary docID is <i><font color="green">PROPNAME_DOCID</font></i>.  See Response XSLT section below for documentation
+on the various SPI parameters
+</p>
+
+
+
+<h2><a name="Configurereqxslt" id="Configurereqxslt"></a>Configuring the Response XSLT</h2>
+<p>This parameter defines the BASE54 Encoded form of the XST used to transform the SOAP response from SalesForce into the documentList format that the Connector-Manager 
+can process.  The XLST here can get generated using any tool the user is familiar with as long as it complies with the DTD for the connector manager expects. The previous
+section on <a href="TestClient">TestClient</a> describes how the TestClient can run a query and transform the results given an XSLT.  Instead of running the TestClient repeatedly
+to refine the XSLT, the expectation is the user can copy-paste the SOAP response and use an XSLT editor to finalize the transform  </p>
+<p>
+<p>
+If the data that the connector instance is transmitting to the GSA is an encoded binary (eg PDF, .doc, .ppt, etc), set
+the attribute for the <content> section to encoding='base64binary'.  For example, you would set the encoding type to base64 
+if the query is returning data from a salesforce document management system (eg. <i>select title,id,contentdocumentid,filetype,versiondata from contentversion where Filetype='PDF'</i>)
+The <i>versiondata</i> field is base64encoded PDF files so to index it that field
+(and nothing more) would get sent in as the only value inside &lt;content encoding="base64binary"/&gt;? field.  The other fields (title, id, contentdocumentid, filetype, etc) could
+be used as metadata.
+If the encoding field is not specified, the default is none and it will get interpreted as plain text.  
+</p>
+<p>
+Once the XSLT is finalized, the entire XSLT needs to get Base64 encoded (without linebreaks) and then entered into the connector configuration screen.  The following link
+proves Base64 transforms without linebreaks <a href="http://base64-encoder-online.waraxe.us/">http://base64-encoder-online.waraxe.us/</a>
+</p>
+
+<p>
+The SPI values defines for the DOCID and DISPLAY/URL should include the primay key identfying the object in SalesForce (eg. case.ID or account.ID:
+<br/>
+<a href="http://code.google.com/apis/searchappliance/documentation/connectors/110/connector_dev/cdg_traversing.html#SpiConstants">http://code.google.com/apis/searchappliance/documentation/connectors/110/connector_dev/cdg_traversing.html#SpiConstants</a>
+</p>
+
+<p>
+A <a href="http://code.google.com/p/google-enterprise-connector-salesforce/source/browse/trunk/projects/salesforce/res/XSLTFile.xsl">sample XLST</a> for the Response transform is referenced at the end of this article.  It demonstrates SPI headers, 
+custom meta-tags and custom implementation-specific fields.
+</p>
+<pre>
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;
+		xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;
+		xmlns:sf=&quot;urn:sobject.enterprise.soap.sforce.com&quot; version=&quot;1.0&quot;&gt;
+
+ &lt;xsl:output method=&quot;xml&quot;  omit-xml-declaration=&quot;no&quot;  /&gt;
+ 
+ &lt;xsl:variable name=&quot;doctype&quot;&gt;Case&lt;/xsl:variable&gt;
+ &lt;xsl:variable name=&quot;queue&quot;&gt;Enterprise&lt;/xsl:variable&gt;
+ &lt;xsl:variable name=&quot;sf_url&quot;&gt;https://cs2.salesforce.com/&lt;/xsl:variable&gt;
+ 
+ &lt;!-- 
+http://code.google.com/apis/searchappliance/documentation/connectors/110/connector_dev/cdg_traversing.html#mp
+
+DEFAULT_MIMETYPE 	Specifies the default type of file that a connector acquires from a content management system.
+PROPNAME_ACTION 	Enables a connector to delete a document from the index of the search appliance.
+PROPNAME_CONTENT 	Indicates the content for a document.
+PROPNAME_CONTENTURL 	Indicates the URL for the content of a document. This property is reserved for future use.
+PROPNAME_DISPLAYURL 	Indicates the URL that appears in the search results.
+PROPNAME_DOCID 	Identifies a document in the content management system.
+PROPNAME_ISPUBLIC 	Indicates whether a document is publicly readable or is a controlled-access document.
+PROPNAME_LASTMODIFIED 	Identifies when a document in the content management system was last modified.
+PROPNAME_MIMETYPE	Specifies the type of file that a connector acquires from a content management system.
+PROPNAME_SEARCHURL 	Identifies the URL location of a document in the content management system for metadata-and-URL feed. 
+				This property is not used by content feed.
+PROPNAME_SECURITYTOKEN
+  --&gt;
+ 
+ &lt;xsl:template match=&quot;/&quot;&gt;
+    &lt;documents xsl:exclude-result-prefixes=&quot;sf soapenv&quot;&gt;
+
+    &lt;xsl:for-each select=&quot;/soapenv:Envelope/soapenv:Body/*[namespace-uri()='urn:enterprise.soap.sforce.com' and 
+			  (local-name()='queryResponse' or local-name()='queryMoreResponse') ]/*[namespace-uri()='urn:enterprise.soap.sforce.com' and local-name()='result']/*[namespace-uri()
+			  ='urn:enterprise.soap.sforce.com' and local-name()='records']&quot;&gt; 
+    &lt;document&gt;
+    &lt;!--  SPIValues  --&gt;
+      		  &lt;spiheaders&gt;
+      		  	&lt;spiheader name=&quot;DEFAULT_MIMETYPE&quot;&gt;text/html&lt;/spiheader&gt;
+      		  	&lt;spiheader name=&quot;PROPNAME_ACTION&quot;&gt;add&lt;/spiheader&gt;
+      		  	&lt;spiheader name=&quot;PROPNAME_CONTENTURL&quot;&gt;      		  		
+			  &lt;xsl:copy-of select=&quot;$sf_url&quot;/&gt;&lt;xsl:value-of disable-output-escaping=&quot;no&quot; select=&quot;sf:Id&quot;/&gt; 			
+      		  	&lt;/spiheader&gt;
+      		  	&lt;spiheader name=&quot;PROPNAME_DISPLAYURL&quot;&gt;
+    		  	  &lt;xsl:copy-of select=&quot;$sf_url&quot;/&gt;&lt;xsl:value-of disable-output-escaping=&quot;no&quot; select=&quot;sf:Id&quot;/&gt;
+      		  	&lt;/spiheader&gt;
+      		  	&lt;spiheader name=&quot;PROPNAME_DOCID&quot;&gt;
+      		  	  &lt;xsl:value-of disable-output-escaping=&quot;no&quot; select=&quot;sf:Id&quot;/&gt;
+      		  	&lt;/spiheader&gt;
+      		  	&lt;spiheader name=&quot;PROPNAME_ISPUBLIC&quot;&gt;true&lt;/spiheader&gt;
+      		  	&lt;spiheader name=&quot;PROPNAME_MIMETYPE&quot;&gt;text/html&lt;/spiheader&gt;
+      		  	&lt;spiheader name=&quot;PROPNAME_SEARCHURL&quot;&gt;&lt;/spiheader&gt;
+      		  	&lt;spiheader name=&quot;PROPNAME_SECURITYTOKEN&quot;&gt;&lt;/spiheader&gt;
+      		  &lt;/spiheaders&gt;
+
+		&lt;metadata&gt;
+		&lt;xsl:if test=&quot;sf:CaseNumber[.!='']&quot;&gt;			
+			&lt;meta name=&quot;CaseNumber&quot;&gt;
+			  &lt;xsl:value-of disable-output-escaping=&quot;no&quot; select=&quot;sf:CaseNumber&quot;/&gt; 					
+			&lt;/meta&gt;
+		&lt;/xsl:if&gt;          
+		&lt;xsl:if test=&quot;sf:Id[.!=&#39;&#39;]&quot;&gt;
+		    &lt;meta name=&quot;Id&quot;&gt;
+		        &lt;xsl:value-of disable-output-escaping=&quot;no&quot; select=&quot;sf:Id&quot;/&gt;
+		    &lt;/meta&gt;
+		&lt;/xsl:if&gt;
+		&lt;/metadata&gt;
+	  		  
+  		  			
+		 &lt;!--  if the content data is base64 encoded (eg. a .pdf, .ppt, .doc), set
+		        encoding="base64binary' otherwise, default is non encoded --&gt;
+		  &lt;content encoding="none"&gt;
+                    &lt;xsl:text disable-output-escaping=&quot;yes&quot;&gt;&lt;![CDATA[&lt;![CDATA[  ]]&gt;&lt;/xsl:text&gt;
+			&lt;html&gt;
+			  &lt;title&gt;Case: &lt;xsl:value-of disable-output-escaping=&quot;yes&quot; 
+					select=&quot;sf:CaseNumber&quot;/&gt; - &lt;xsl:value-of disable-output-escaping=&quot;yes&quot; 
+					select=&quot;sf:Subject&quot;/&gt;
+			  &lt;/title&gt;
+			  &lt;body&gt;	        
+			    &lt;h2&gt;&lt;a name=&quot;summary&quot;&gt;Case Summary&lt;/a&gt;&lt;/h2&gt;						
+			    &lt;table width=&quot;100%&quot; border-width=&quot;3px&quot;  border=&quot;3&quot; border-style=&quot;ridge&quot;	
+				   bgcolor=&quot;#CCFFFF&quot; bordercolor=&quot;green&quot; bordercollapse=&quot;separate&quot;	
+				   background-color=&quot;#fff5ee&quot;&gt;						
+			      &lt;tr&gt;							
+			      &lt;/tr&gt;
+			      &lt;tr&gt;
+				&lt;td&gt;&lt;b&gt;CaseNumber:&lt;/b&gt;
+				   &lt;xsl:value-of disable-output-escaping=&quot;yes&quot; select=&quot;sf:CaseNumber&quot;/&gt;
+				&lt;/td&gt;
+			       &lt;/tr&gt;
+   			    &lt;/table&gt;
+			    &lt;br/&gt;
+			    &lt;p&gt;
+			    &lt;h3&gt;Description:&lt;/h3&gt;
+			      &lt;div STYLE=&quot;word-wrap:  break-word&quot;  &gt;
+			        &lt;pre width=&quot;100%&quot;&gt;
+			      	  &lt;xsl:value-of disable-output-escaping=&quot;yes&quot; select=&quot;sf:Description&quot;/&gt;
+				&lt;/pre&gt;
+			      &lt;/div&gt;  
+			     &lt;/p&gt;
+			     &lt;hr/&gt;				   		
+			     &lt;br/&gt;
+			   &lt;/body&gt;
+			 &lt;/html&gt;			
+                  	
+			&lt;xsl:text disable-output-escaping=&quot;yes&quot;&gt; &lt;![CDATA[]]]]&gt;&lt;![CDATA[&gt;]]&gt;&lt;/xsl:text&gt;				
+		  &lt;/content&gt;					
+    &lt;/document&gt;             
+    &lt;/xsl:for-each&gt;
+    &lt;/documents&gt;
+  &lt;/xsl:template&gt;
+      
+&lt;/xsl:stylesheet&gt;
+
+
+</pre>
+
+<p>
+The salesforce connector provies several utility Date/Time conversion routines to translate the SalesForce default GMT time to local and the compressed 'numeric
+time' used for checkpoints.  See javadocs for <i><a href="http://google-enterprise-connector-salesforce.googlecode.com/svn/trunk/projects/salesforce/javadocs/com/google/enterprise/connector/salesforce/Util.html">com.google.enterprise.connector.salesforce.Util</a></i>.
+  For example, the folowing XSLT rountines  are used in the date conversions:
+</p>
+<pre>
+&lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;
+				xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;
+				xmlns:sf=&quot;urn:sobject.enterprise.soap.sforce.com&quot;
+				xmlns:java=&quot;http://xml.apache.org/xslt/java&quot;
+				xmlns:sfeeder=&quot;com.google.enterprise.connector.salesforce.Util&quot;
+ 			    version=&quot;1.0&quot;&gt;
+
+
+
+&lt;xsl:template name=&quot;convertdate&quot;&gt;
+   &lt;xsl:param name=&quot;sfdate&quot;/&gt;					  	   
+   &lt;xsl:value-of select=&quot;sfeeder:convertSF_GMTToLocalTime($sfdate)&quot;/&gt;	
+&lt;/xsl:template&gt;
+
+&lt;xsl:template name=&quot;formatlmDate&quot;&gt;	
+   &lt;xsl:param name=&quot;sfdate&quot;/&gt;   					  	   
+   &lt;xsl:value-of select=&quot;sfeeder:formatlmDate($sfdate)&quot;/&gt;	
+&lt;/xsl:template&gt;
+
+</pre>
+
+<h2><a name="Configureazquery" id="Configureazquery"></a>Configuring the Authorization Query</h2>
+<p>If the XSLT used in a connector has the ISPUBLIC SPI header set to 'false', the the documents will get considered secure and the Authentication/Authorization (AU/AZ) 
+process will get enabled.  See the section on <a name="#ServeTimeSecurity">Serve Time User Authorization and Document Access Control</a>
+<br/>
+This section describes the authorization query using the <b>Default Authorization Module</b> the connector will run using the <b>users</b> sessionID with salesforce.  This query can be as simple as
+<font color="green">select case.ID from case where case.ID in ($DOCIDS)</font> depending on the documents in context for the connector.
+<br/>
+The $DOCIDS is a special wildcard reserved term that the connector uses to substitute the list of documentIDs the connector needs to authorize.  If a user is allowed to see
+all documents in SalesForce with any valid login, then the Authorization query isn't necessary (but its still run).
+<br/>
+<br/>
+The Authorization query <b>must</b> return the primary key (docIDs) for only those documents the user is authorized for.  The authorized documents identifiers
+returned must be a subset of the list submitted.  For example, for the query above, the GSA asks the connector if a 
+user is authorized to see documents (5003300005jZ8uAAE,6003300005jZ67ABE,7003300005qY5uACE,8003300005qY5uADE).  The select
+query will return only those documentID the user is able to see.  If the query returns (5003300005jZ8uAAE,6003300005jZ67ABE,7003300005qY5uACE), then
+the connetor knows the user is not allowed to see case.iD==documentID of (8003300005qY5uADE).
+<br/>
+<br/>
+The other wildcard defined is $USERID which is the username for the session in context.   The Authorization query can use both $DOCID and $USERID in the Authorization Query.
+</p>
+
+<p class="note">
+NOTE:  The Authorization Query is used by the Default Authorization module only.  Even if other modules are loaded and enabled, this parameter is requred (but not used).
+</p>
+
+
+<h2><a name="Configureazxslt" id="Configureazxslt"></a>Configuring the Authorization XSLT</h2>
+<p>The AuthorizationXSLT setting is used in conjunction with the Authorization Query (which is needed for the <b>Default Authorization Module</b>).
+Since the Authorization query can return arbitrary data (because its dependent on the implementation and connector configuation), the SOAP response needs to get
+transformed into a canonical form that the connector an process in a general way.  That is, an XSLT stylesheet is applied to the Authorization response to translate
+the arbitrary implementation-specific response back into a form the connector can process.  The end output of the XLST <b>must</b> be in the form
+</p>
+<pre>
+&lt;azdecisions&gt;
+&lt;docID&gt;5003300005jZ8uAAE&lt;/docID&gt;
+&lt;docID&gt;6003300005jZ67ABE&lt;/docID&gt;
+&lt;docID&gt;7003300005qY5uACE&lt;/docID&gt;
+&lt;/azdecisions&gt;
+</pre>
+
+<p>
+Sample Authorization XSLT:
+<pre>
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;
+				xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;
+				xmlns:sf=&quot;urn:sobject.enterprise.soap.sforce.com&quot;
+				xmlns:java=&quot;http://xml.apache.org/xslt/java&quot; version=&quot;1.0&quot;&gt;
+ &lt;xsl:output method=&quot;xml&quot;  omit-xml-declaration=&quot;no&quot;  /&gt;
+ &lt;xsl:variable name=&quot;xsltype&quot;&gt;https://cs2.salesforce.com/&lt;/xsl:variable&gt;
+ &lt;xsl:template match=&quot;/&quot;&gt;
+    &lt;azdecisions xsl:exclude-result-prefixes=&quot;sf soapenv java&quot;&gt;
+	&lt;xsl:for-each select=&quot;/soapenv:Envelope/soapenv:Body/*[namespace-uri()='urn:enterprise.soap.sforce.com' and 
+				(local-name()='queryResponse' or local-name()='queryMoreResponse') ]/*[namespace-uri()='urn:enterprise.soap.sforce.com' 
+				and local-name()='result']/*[namespace-uri()='urn:enterprise.soap.sforce.com' and local-name()='records']&quot;&gt; 
+      		&lt;docID&gt;&lt;xsl:value-of disable-output-escaping=&quot;no&quot; select=&quot;sf:Id&quot;/&gt;&lt;/docID&gt;           
+      &lt;/xsl:for-each&gt;
+    &lt;/azdecisions&gt;
+   &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;
+</pre>
+</p>
+<p class="note">
+NOTE:  The Authorization XLST is used by the Default Authorization module only.  Even if other modules are loaded and enabled, this parameter is requred (but not used).
+</p>
+
+
+
+
+<h2><a name="ConnectorMGRSchedule" id="ConnectorMGRSchedule"></a>Setting the Connector Schedule </h2>
+<p>The configuration section for each connector instance under "Connector Schedule".
+ defines the times in which the connector manager will poll the connector for documents.  This is the time in which the Connector Thread is active and has nothing to do
+with the Quartz Thread which actually goes to SalesForce to retrieve data.</p>
+<p>Normally this setting should not be altered and only the Quartz Scheduler should determine when to traverse SalesForce.</p>
+<p>Note that a connector scheduled to run from 12 a.m. to 12 a.m. always runs. Any
+    other schedule with the same beginning and ending time never runs, either for
+    a connector or for the Google Search Appliance's standard crawl function.
+
+<h2><a name="TraversalRate" id="Traversal Rate"></a>Setting the Connector Manager Traversal Rate </h2>
+<p>The "Traversal Rate" section for the connector instance actually specifies the largest batch of documents that connector manager will push to the GSA per iteration.</p>
+ </p>
+<p>
+This parameter should be set relatively high (3000).
+</p>
+<p>
+However, see <a href="http://code.google.com/p/google-enterprise-connector-manager/issues/detail?id=67">http://code.google.com/p/google-enterprise-connector-manager/issues/detail?id=67</a> which will
+cause the connector manager to only process 100 docs at a time.  This means until the salesforce connector is deployed within a release after 1.3.2, the Request Query 
+<b>must</b> return less that 100 records per response.  That is, each query response or queryMore response (cursor) must contain less than 100 records.
+</p>
+
+
+
+
+<h2><a name="Restart" id="Restart"></a>Restarting the Connector</h2>
+<p>After you complete configuring the connector on the Admin Console, restart Tomcat. </p>
+
+<h2><a name="Verify" id="Verify"></a>Verifying that the Connector is Working</h2>
+<p>After you restart the connector, verify on the Admin Console that the Google Search
+    Appliance is receiving feeds and verify on the Crawl Diagnostics page that there are indexed URLs. </p>
+
+<h2><a name="AddPattern" id="AddPattern"></a>Add Connector CrawlPattern to GSA Follow Pattern</h2>
+<p>Before initiating a crawl of SalesForce, remember to set the "Follow and Crawl Only URLs with the Following Patterns:" pattern to include the SalesForce connector.  For example,
+the following pattern would include all connectors <font color="green"><i>^googleconnector://</i></font></p>
+
+<h1><a name="ForceRecrawl" id="ForceRecrawl"></a>Forcing a Recrawl of SalesForce Content</h1>
+
+<p>Under some circumstances, you might need to force a complete recrawl of content either on SalesForce or on the StoreType.</p>
+
+<p><b>Recrawl content on SalesForce (Quartz Thread last_sync_date):</b> In this situation, the administrator wants to recrawl content on SalesForce itself.  The connector  will login to SalesForce and download and feed in all the content
+defined in the Query.  The administrator may want to do this if there is some new field that needs to get indexed; the query will select this field and a new Stylesheet with transform it into a feed.  These documents
+that get fed into the GSA will reflect the new stylesheet and field.   If the administrator is using the <font color="green">$LAST_SYNC_DATE</font>  in the query, if that param is reset to a previous date, the 
+connector will select all documents modified since and feed that in (incremental crawl)</p>
+
+
+<p><b>Recrawl content on FileStore (ConnectorManager Thread checkpoint):</b> The connector can also recrawl some content that is on a persistent store (like FileStore or JDBCStore).  The administrator may want to do this after an index reset on the GSA or
+if a new stylesheet needs to get applied to the feed.   The documents saved on a persistent store is actually the raw SOAP response from the QuartzThread so if a new sytlesheet is applied, the documents reindexed
+will show updated stylesheet info.  There is no need in this case to go to SalesForce to acquire the content as the content itself has not changed; just the stylesheet presentation has.  To upate the checkpoint
+file for a connector:  </p>
+<ol>
+<li>Shutdown Tomcat </li>
+<li>Edit  <font color="green">WEB-INF/connectors/salesforce-connector/connectorinstance/connectorinstance_state.txt</font> and set the checkoint number to a time before the last feedtimestamp stored
+in the persistent store</li>
+<li>Restart Tomcat</li>
+</ol>
+<br/> 
+<p>
+For example, suppose the FileStore has 10 files (one per day) ranging in number from 200801010101 (Jan 1st 1:01am) and the checkpoint files date is 200801100101 (Jan 10th).  To force the connector to reload/retransform
+all the documents in the store since Jan5th, simply set the checkpoint state to 200801050101 
+</p>
+
+
+<h1><a name="Delete" id="Delete"></a>Deleting Documents</h1>
+<p>
+To delete documents in the GSA, the transform XSLT can be used with to detect any add/delete flag from the response query and set the SPI header appropriately. 
+<br/>
+For example, suppose the select query includes the 'isDeleted' flag as in <font color='green'>select ID,CaseNumber, Description, isDeleted from case where LastModifiedDate>$LAST_SYNC_DATE LIMIT</font>.  Then
+the XSLT can look to see if isDeleted is set and set the appropriate SPI Property.
+<br/>
+<pre>
+&lt;xsl:choose&gt;
+  &lt;xsl:when test =&quot;sf:IsDeleted[.=&#39;true&#39;]&quot;&gt;
+   	&lt;spiheader name=&quot;PROPNAME_ACTION&quot;&gt;delete&lt;/spiheader&gt;
+  &lt;/xsl:when&gt;
+  &lt;xsl:otherwise&gt;
+	&lt;spiheader name=&quot;PROPNAME_ACTION&quot;&gt;add&lt;/spiheader&gt;
+  &lt;/xsl:otherwise&gt;
+&lt;/xsl:choose&gt;
+</pre>
+<br/>
+<a href="http://code.google.com/apis/searchappliance/documentation/connectors/110/connector_dev/cdg_traversing.html#PROPNAME_ACTION">http://code.google.com/apis/searchappliance/documentation/connectors/110/connector_dev/cdg_traversing.html#PROPNAME_ACTION</a><br/>
+A separate connector instance can't be used to delete a document in another instance because the internal document prefix on the GSA  is always different even if the same
+docID is selected (i.e., googleconnector://instance1.localhost?docID=5003300005jZ8uAAE  vs googleconnector://instance2.localhost?docID=5003300005jZ8uAAE).  The customer can define a custom feed to feed in delete commands using the same connector instance/feed name.
+Alternatively, the administrator can temprorarily alter the 'add' connector instance to run a select query to pickup all docs for deletion then apply a stylesheet to remove them.  
+</p>
+
+<h1><a name="Build" id=""Build" "></a>Building from Source</h1>
+<p>
+The Apache <a href="http://ant.apache.org/">Ant</a> buildfile (<a href="http://code.google.com/p/google-enterprise-connector-salesforce/source/browse/trunk/projects/salesforce/build.xml">build.xml</a>)
+ is provided.  Use Sun Java 6+ and just run 'ant' on the build.xml file (first set JAVA_HOME= to jdk1.6+).  The default target is 'dist' and will compile the source and create
+the salesforce connector jar file in the dist folder.  To recompile against any other version of a JDK, edit <code>&lt;javac  nowarn=&quot;true&quot;  target=&quot;1.6&quot; srcdir=&quot;${src}&quot; destdir=&quot;${tempbin}&quot;&gt;</code>
+and set the <code>target</code> appropriately.
+<br/>
+
+<h1><a id="troubanch" name="troubanch"></a>Troubleshooting</h1>
+<p>This section provides information on troubleshooting the Google Enterprise 
+Connector for SalesForce: </p>
+<ul>
+    <li><a href="#Logging">Logging</a></li>
+    <li><a href="#erranch">Error Messages</a></li>
+    </ul>
+
+
+
+
+
+<h2><a name="Logging" id="Logging"></a>Logging</h2>
+<p>Logging is a useful technique for recording information about how your installation
+    is operating. You can use the information logged for troubleshooting the operations
+    of the connector, the Google Search Appliance, and SalesForce.</p>
+<p>The connector manager and connectors use the java.util.logging package for logging.
+    The installer installs a logging mechanism for the connector
+    and starts the logging process automatically. The default logging configuration
+    is defined in the logging.properties file. </p>
+<p>To customize the configuration, navigate to <br>
+    <em>$CATALINA_HOME/webapps/connector-manager/WEB-INF/classes</em>
+    and edit the logging.properties file there. </p>
+<p>The following line in the file sets the default logging level for the SalesForce
+    connector:</p>
+<p><code>com.google.enterprise.connector.salesforce.level = INFO</code> </p>
+<p>This property is in the Global section of the logging.properties file. The logging
+    level of INFO applies to all handlers, for example, to the File and Console handlers,
+    unless you specify a higher level of logging for a particular handler. The value
+    of the property also sets the logging level for all classes inside the package
+    <code>com.google.enterprise.connector.salesforce</code>. </p>
+<p> The default logging level for most packages and output destinations (handlers)
+    is <code>INFO</code>. To enable debugging at a finer level of granularity, you
+    can change the package-specific settings to <code>ALL</code> or <code>FINER</code>. For example, you might
+    change the logging level as follows:</p>
+<p><code>com.google.enterprise.connector.salesforce.level = ALL</code> </p>
+<p>The possible values of the <code>level</code> property are <code>OFF</code>, <code>SEVERE</code>, <code>WARNING</code>, <code>INFO</code>, <code>CONFIG</code>, <code>FINE</code>, <code>FINER</code>, <code>FINEST</code>,
+    and <code>ALL</code>.</p>
+<p>Particular handler settings work together with package-level settings. If you
+    change the logging level for a package, you might need to change the logging
+    levels at the handler level. The handler logging level must be set to at least
+    the output level of the package logging level. </p>
+<p>For example, if you set the logging level of com.google.enterprise.connector.salesforce.level
+    to ALL and the FileHandler level
+    is set to INFO, logging to the FileHandler fails because the package logging
+    level is higher than the handler logging level. In that situation, change the
+    FileHandler logging level to <code>ALL</code>:   </p>
+<p><code>java.util.logging.FileHandler.level = ALL</code></p>
+<p>The output from the <code>ConsoleHandler</code> appears in the <em>CATALINA_HOME/logs
+    directory. On Windows, the output appears in the stdout_<em>date</em>.log file,
+    and on Unix the output appears in the catalina.out file.</p>
+<p>The output from the <code>FileHandler</code> appears in the <em>$CATALINA_HOME/logs
+    directory. The output appears in the google-connectors.<em>connector_type</em><em>sequence</em>.log
+    file, where <em>sequence</em> is a series of numbers starting with 0 and incremented
+    by 1 on each occurrence (0, 1, 2, 3...<em>n</em>). </p>
+<p>After editing the logging.properties file, restart Tomcat. </p>
+
+<h2><a id="erranch" name="erranch"></a>Error Messages </h2>
+<p>This section describes some commonly encountered error messages and their 
+likely solutions.</p>
+<h3><b>Crawl URL does not match 'Include URL' patterns or matches 'Do Not Include
+    URL' patterns. </b></h3>
+<p>You see this message when a user-provided Crawl URL  does not match patterns
+    specified under "Include URLs Matching the Following Patterns".  Simply add 
+    (<b>^googleconnector://</b>) to the follow pattern on the GSA admin console</p>
+<h3><b>Required field not specified. </b></h3>
+<p>Fields marked with an asterisk (*) on the Configuring Connector Instances 
+form are required. You must provide appropriate values for these fields. </p>
+ 
+<h3><b>Cannot connect to the given SalesForce Site URL with the supplied Username/Password. Please re-enter.
+</b></h3>
+   <p>You must provide appropriate values for all the mandatory fields on 
+	configuring connector instances.  
+</p>
+
+<h3><b>SAX Parser Exception during Feed Transform
+</b></h3>
+   <p>The connector was unable to transform the response SOAP object into the canoncial <documents><document></document></documents>
+   format required by the connector.  Its possible there is a non-escaped/UTF character in the SOAP response object.  Set the logging level
+   to FINE and recrawl salesforce such the connector attempts to transform the same row again (eg by setting back the last sync date, et).  The
+   connector logs should show which batch in the DBStore or Filestore caused the transform.  If the DBStore, then simply uncompress+base64decode that
+   row and see why the ResponseXSLT can't transform it.</p>
+
+
+<p class="note"><b> Note :</b> All other error messages are available in the Tomcat
+    log file.</p>
+
+
+<h1><a name="relatedanch"></a>Related Documentation</h1>
+<ul>
+  <li><a href="http://code.google.com/apis/searchappliance/documentation/50/connector_admin/admin_connector.html">Administering Connectors</a> </li>
+  <li><a href="http://code.google.com/apis/searchappliance/documentation/50/secure_search/secure_search_overview.html">Managing Search for Controlled-Access Content</a></li>
+  <li><a href="http://code.google.com/apis/searchappliance/documentation/50/metadata.html">Google Search Appliance External Metadata Indexing Guide</a></li>
+  <li><a href="http://code.google.com/apis/searchappliance/documentation/50/xml_reference.html#request_meta">Google Search Appliance Search Protocol Reference</a></li>
+  <li><a href="http://www.salesforce.com/us/developer/docs/api/index.htm">SalesForce API documentation</a></li>
+  <li><a href="http://www.salesforce.com/us/developer/docs/api/Content/sforce_api_objects_contentversion.htm">SalesForce Content API documentation</a></li>  
+  <li><a href="http://www.salesforce.com/us/developer/docs/api/Content/sforce_api_calls_soql_relationships.htm">SalesForce Relationship Queries</a></li>
+  <li><a href="http://www.opensymphony.com/quartz/">Quartz Scheduling</a>
+    <li><a href="http://www.quartz-scheduler.org/docs/configuration/ConfigJDBCJobStoreClustering.html">Quartz Clustering</a>
+  
+
+
+
+  </ul>
+
+
+<p class="backtotop"><a href="#top">Back to top</a></p>
+</div> 
+<!-- ########## END PAGE CONTENT ########## -->
+  
+</div><!-- end wrapper -->
+
+<!-- ########## PAGE FOOTER ########## -->
+<div id="footer">
+
+<div id="footerlogo"><img src="art.gif" alt="Google color balls"></div>
+
+<div id="copyright">
+<p>©2008 Google - <a href="http://www.google.com/privacy.html">Privacy Policy</a> - <a href="http://www.google.com/terms_of_service.html">Terms and Conditions</a> - <a href="http://www.google.com/about.html">About Google</a></p>
+</div> <!-- end copyright -->
+
+</div> 
+<!-- ########## END PAGE FOOTER ########## -->
+
+
+
+</body></html>
